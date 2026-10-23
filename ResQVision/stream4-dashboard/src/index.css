@@ -1,0 +1,293 @@
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
+  overflow-x: hidden;
+}
+
+/* Dark mode default */
+html.dark body {
+  background-color: #08090C;
+  color: #FFFFFF;
+}
+
+/* Light mode overrides */
+html.light body {
+  background-color: #F8FAFC;
+  color: #0F172A;
+}
+
+/* Custom sleek accessible scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #08090C;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #272A36;
+  border-radius: 3px;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3E4352;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Leaflet dark/light container */
+.leaflet-container {
+  font-family: inherit;
+  border-radius: 16px;
+  width: 100%;
+  height: 100%;
+}
+
+html.dark .leaflet-container {
+  background-color: #0E1015;
+}
+
+html.light .leaflet-container {
+  background-color: #E2E8F0;
+}
+
+/* Leaflet popups */
+html.dark .leaflet-popup-content-wrapper {
+  background: #12141A !important;
+  color: #FFFFFF !important;
+  border: 1px solid #2B2E3A !important;
+  border-radius: 14px !important;
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.85) !important;
+  padding: 6px !important;
+}
+
+html.dark .leaflet-popup-tip {
+  background: #12141A !important;
+  border: 1px solid #2B2E3A !important;
+}
+
+html.light .leaflet-popup-content-wrapper {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.15) !important;
+  padding: 6px !important;
+}
+
+html.light .leaflet-popup-tip {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+}
+
+html.dark .leaflet-popup-close-button {
+  color: #94A3B8 !important;
+  padding: 6px 8px !important;
+}
+
+html.dark .leaflet-popup-close-button:hover {
+  color: #FFFFFF !important;
+}
+
+html.light .leaflet-popup-close-button {
+  color: #64748B !important;
+  padding: 6px 8px !important;
+}
+
+html.light .leaflet-popup-close-button:hover {
+  color: #0F172A !important;
+}
+
+/* Zoom controls */
+html.dark .leaflet-control-zoom {
+  border: 1px solid #2B2E3A !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.dark .leaflet-control-zoom a {
+  background-color: #12141A !important;
+  color: #FFFFFF !important;
+  border-bottom: 1px solid #2B2E3A !important;
+}
+
+html.dark .leaflet-control-zoom a:hover {
+  background-color: #1E212B !important;
+  color: #FFFFFF !important;
+}
+
+html.light .leaflet-control-zoom {
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light .leaflet-control-zoom a {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+}
+
+html.light .leaflet-control-zoom a:hover {
+  background-color: #F1F5F9 !important;
+  color: #000000 !important;
+}
+
+/* Clean spatial attribution */
+.leaflet-control-attribution {
+  border-radius: 6px;
+  font-size: 10px !important;
+  padding: 2px 8px !important;
+}
+
+html.dark .leaflet-control-attribution {
+  background: rgba(8, 9, 12, 0.88) !important;
+  color: #94A3B8 !important;
+}
+
+html.dark .leaflet-control-attribution a {
+  color: #E2E8F0 !important;
+}
+
+html.light .leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #64748B !important;
+}
+
+html.light .leaflet-control-attribution a {
+  color: #0F172A !important;
+}
+
+/* Marker pulse animations */
+@keyframes ping-slow {
+  0% { transform: scale(0.95); opacity: 0.9; }
+  50% { transform: scale(1.35); opacity: 0.25; }
+  100% { transform: scale(0.95); opacity: 0.9; }
+}
+
+.marker-pulse-red {
+  animation: ping-slow 2.2s ease-in-out infinite;
+}
+
+.marker-pulse-amber {
+  animation: ping-slow 2.6s ease-in-out infinite;
+}
+
+.marker-pulse-green {
+  animation: ping-slow 3s ease-in-out infinite;
+}
+
+/* Weather & Water Animation Keyframes */
+@keyframes water-ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.animate-water-ripple {
+  animation: water-ripple 2.8s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+}
+
+@keyframes wind-gust {
+  0% {
+    stroke-dashoffset: 120;
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.2;
+  }
+}
+
+.animate-wind-stream {
+  stroke-dasharray: 20 15;
+  animation: wind-gust 2s linear infinite;
+}
+
+/* Focus visible */
+*:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Rain Simulation Keyframes */
+@keyframes fall-rain {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(180px);
+    opacity: 0;
+  }
+}
+
+.rain-streak {
+  position: absolute;
+  width: 1.5px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(186, 230, 253, 0.85) 60%, rgba(56, 189, 248, 1));
+  border-radius: 9999px;
+  animation: fall-rain linear infinite;
+}
+
+/* GDACS Pin Drop Shadow */
+.gdacs-disaster-pin {
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.65));
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.gdacs-disaster-pin:hover {
+  transform: translateY(-4px) scale(1.12);
+  z-index: 9999 !important;
+}

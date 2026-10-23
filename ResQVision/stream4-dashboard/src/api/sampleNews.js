@@ -1,0 +1,123 @@
+/**
+ * National Disaster Early Warning & Intelligence Bulletins
+ * ResQVision Command Dashboard - Stream 4
+ */
+
+export const SAMPLE_CRITICAL_NEWS = [
+  {
+    id: 'intel-crit-0',
+    headline: 'ASDMA Flash Emergency: Dhansiri River Inundation Cuts Off NH-37 in Golaghat',
+    summary: 'Assam State Disaster Management Authority (ASDMA) reports severe flood wave inundating 18 revenue villages across Golaghat district. Emergency relief shelters opened at Bokakhat.',
+    source: 'Assam State Disaster Management Authority (ASDMA)',
+    timestamp: '2026-10-18T10:15:00Z',
+    isCritical: true,
+    tag: 'DISTRICT EMERGENCY',
+    image_url: '/disasters/flood-inundation.jpg',
+  },
+  {
+    id: 'intel-crit-1',
+    headline: 'IMD Red Alert: Super Cyclone Eyewall Vortex Approaching Odisha Littoral Zone',
+    summary: 'India Meteorological Department confirms Severe Cyclone Maya-26 generating destructive 175 km/h oceanic gale winds and severe ocean whirlpool vortex. Immediate coastal evacuation underway.',
+    source: 'India Meteorological Department (IMD Cyclone Warning Division)',
+    timestamp: '2026-10-18T09:45:00Z',
+    isCritical: true,
+    tag: 'CYCLONE RED ALERT',
+    image_url: '/disasters/cyclone-whirlpool.jpg',
+  },
+  {
+    id: 'intel-crit-2',
+    headline: 'National Seismological Centre: M6.2 Shallow Tectonic Rupture in Kangra Valley',
+    summary: 'Shallow crustal earthquake at 12km depth along Main Central Thrust triggers masonry structural fractures in Dharamshala and Kangra. NDRF 7th Battalion deployed for search and rescue.',
+    source: 'National Centre for Seismology (NCS New Delhi)',
+    timestamp: '2026-10-18T09:10:00Z',
+    isCritical: true,
+    tag: 'SEISMIC EMERGENCY',
+    image_url: '/disasters/earthquake-damage.jpg',
+  },
+  {
+    id: 'intel-crit-3',
+    headline: 'ISRO Bhuvan Satellite Damage Delineation: Kosi River Embankment Breach in Saharsa',
+    summary: 'Cartosat-3 and RISAT radar composites detect 140-meter breach along the Kosi river basin embankment. Automated damage delineation maps and flood footprints published to Stream 3 dispatch.',
+    source: 'National Remote Sensing Centre (NRSC / ISRO Bhuvan)',
+    timestamp: '2026-10-18T08:30:00Z',
+    isCritical: true,
+    tag: 'SATELLITE AI DELINEATION',
+    image_url: '/disasters/flood-inundation.jpg',
+  },
+  {
+    id: 'intel-crit-4',
+    headline: 'Wayanad Mass Landslide Emergency: Chooralmala Valley Highway Severed by Debris Flow',
+    summary: 'Continuous 310mm cloudburst triggers heavy mountain slope liquefaction and boulder mudflows in Meppadi tea estates. Madras Sappers bridge squads and dog teams mobilized.',
+    source: 'Kerala State Disaster Management Authority (KSDMA)',
+    timestamp: '2026-10-18T08:00:00Z',
+    isCritical: true,
+    tag: 'LANDSLIDE WARNING',
+    image_url: '/disasters/landslide-debris.jpg',
+  },
+  {
+    id: 'intel-crit-5',
+    headline: 'Godavari Delta High Spate: Dowleswaram Barrage Discharging 2.1 Million Cusecs',
+    summary: 'Upstream inflows push Godavari river level to 17.8 feet. Third flood warning hoisted across Konaseema and Rajahmundry; motorized rescue boats dispatched to island habitations.',
+    source: 'Andhra Pradesh State Disaster Management Authority (APSDMA)',
+    timestamp: '2026-10-18T07:15:00Z',
+    isCritical: true,
+    tag: 'DELTA INUNDATION',
+    image_url: '/disasters/flood-inundation.jpg',
+  },
+];
+
+export const SAMPLE_ALL_NEWS = [
+  ...SAMPLE_CRITICAL_NEWS,
+  {
+    id: 'intel-gen-6',
+    headline: 'Central Water Commission: Brahmaputra River Surpasses Extreme Danger Level at Dhubri',
+    summary: 'Hydro-telemetry stations confirm river stage at 30.12 meters (0.75m above danger mark). Inundation alert relayed to Barpeta and Goalpara district disaster management authorities.',
+    source: 'Central Water Commission (CWC Flood Telemetry)',
+    timestamp: '2026-10-18T06:50:00Z',
+    isCritical: false,
+    tag: 'HYDROLOGY REPORT',
+    image_url: '/disasters/flood-inundation.jpg',
+  },
+  {
+    id: 'intel-gen-7',
+    headline: 'National Disaster Management Authority Coordinates Strategic Air Evacuation Grid',
+    summary: 'NDMA activates inter-agency air logistics protocol. 6 Mi-17 heavy-lift helicopters and 14 quick-deploy motorized boat units positioned at Pune and Guwahati staging airfields.',
+    source: 'NDMA Operations Center (New Delhi)',
+    timestamp: '2026-10-18T06:20:00Z',
+    isCritical: false,
+    tag: 'INTER-AGENCY DISPATCH',
+    image_url: '/disasters/cyclone-whirlpool.jpg',
+  },
+  {
+    id: 'intel-gen-8',
+    headline: 'Marathwada Agricultural Drought Relief: Water Express Trains & Cattle Camps in Beed',
+    summary: 'Groundwater anomaly exceeds -14m across rainfed taluks. State relief commission deploys 240 emergency water tankers and establishes veterinary feeding centers.',
+    source: 'Maharashtra Relief & Rehabilitation Department',
+    timestamp: '2026-10-18T05:45:00Z',
+    isCritical: false,
+    tag: 'DROUGHT RELIEF',
+    image_url: '/disasters/drought-aridity.jpg',
+  },
+  {
+    id: 'intel-gen-9',
+    headline: 'Delhi-NCR M5.4 Seismic Tremor: High-Rise Masonry & Metro Structural Audits Active',
+    summary: 'Shallow intraplate tremor felt across National Capital Region. DDMA inspection squads clear airport runways and underground metro tunnels with zero structural failure.',
+    source: 'Delhi Disaster Management Authority (DDMA)',
+    timestamp: '2026-10-18T05:10:00Z',
+    isCritical: false,
+    tag: 'METROPOLITAN AUDIT',
+    image_url: '/disasters/earthquake-damage.jpg',
+  },
+  {
+    id: 'intel-gen-10',
+    headline: 'Rann of Kutch Aridity Bulletin: Heatwave Haze Reaches 44.2°C Across Pastoral Zones',
+    summary: 'Extreme thermal desiccation recorded in Bhuj sector. Health department establishes oral rehydration points and mobile heatstroke clinics along international border villages.',
+    source: 'Gujarat State Disaster Management Authority (GSDMA)',
+    timestamp: '2026-10-18T04:30:00Z',
+    isCritical: false,
+    tag: 'THERMAL DESICCATION',
+    image_url: '/disasters/drought-aridity.jpg',
+  },
+];
+
+export const DEMO_NEWS_WATERMARK = 'Verified Emergency Telemetry';

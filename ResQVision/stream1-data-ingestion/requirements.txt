@@ -1,0 +1,8 @@
+cachetools>=5.3,<8
+httpx>=0.25,<1
+pydantic>=2.5,<3
+structlog>=23.1,<27
+tenacity>=8.2,<10
+pytest>=7.4,<10
+colorama>=0.4
+Pygments>=2.17
