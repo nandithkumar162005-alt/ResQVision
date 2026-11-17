@@ -1,0 +1,7 @@
+# OPTIONAL: adds a pretrained "real vs AI-generated" image classifier to the Image Authenticity Check.
+# Needs internet on first run (downloads the model from Hugging Face, ~350 MB). Without it, the check still
+# works using file metadata + weak pixel hints, but cannot judge stripped images.
+#   pip install -r requirements-authenticity-model.txt
+transformers>=4.40
+torch>=2.2
+# Optional env vars:  AUTHENTICITY_HF_MODEL=umm-maybe/AI-image-detector   AUTHENTICITY_USE_MODEL=false

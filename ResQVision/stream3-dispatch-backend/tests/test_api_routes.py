@@ -11,11 +11,8 @@ from app.db.models import DisasterEvent, DispatchLog
 
 @pytest.fixture(autouse=True)
 def setup_test_database():
-    """Recreate tables before each API test."""
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
+    """Handled by conftest in-memory SQLite fixture."""
     yield
-    Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture

@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python virtual environment
+.venv/
+venv/
+ENV/
+ResQVision/.venv/
+
+# Environment secrets
+.env
+*.env.local
+ResQVision/stream3-dispatch-backend/.env
+ResQVision/stream4-dashboard/.env
+
+# Node.js dependencies and builds
+node_modules/
+dist/
+ResQVision/stream4-dashboard/node_modules/
+ResQVision/stream4-dashboard/dist/
+npm-debug.log*
+yarn-debug.log*
+
+# Test databases & caches
+.pytest_cache/
+*.db
+*.sqlite3
+test_temp.db
+
+# ResQVision local data & runtime logs
+server/data/
+server/uploads/
+logs/*.log
+ResQVision/logs/*.log
+ResQVision/stream4-dashboard/server/data/
+ResQVision/stream4-dashboard/server/uploads/
+
+# OS metadata
+.DS_Store
+Thumbs.db

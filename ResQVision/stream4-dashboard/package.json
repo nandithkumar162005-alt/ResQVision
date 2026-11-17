@@ -1,34 +1,30 @@
 {
-  "name": "resqvision-stream4-dashboard",
+  "name": "resqvision-frontend",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "node server/index.js",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test:e2e": "node --test server/test/e2e.test.js server/test/contracts.test.js server/test/hazard_engine.test.js server/test/navigation_and_auth.test.js server/test/verify_image.test.js"
   },
   "dependencies": {
-    "leaflet": "^1.9.4",
-    "lucide-react": "^0.441.0",
+    "express": "^4.21.2",
+    "lucide-react": "^0.468.0",
     "maplibre-gl": "^4.7.1",
+    "multer": "^2.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.2",
-    "recharts": "^2.12.7",
+    "react-router-dom": "^6.28.0",
     "swr": "^2.2.5"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.5.0",
-    "@testing-library/react": "^16.0.1",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
-    "jsdom": "^25.0.0",
-    "postcss": "^8.4.47",
-    "tailwindcss": "^3.4.11",
-    "vite": "^5.4.6",
-    "vitest": "^2.1.1"
+    "postcss": "^8.5.32",
+    "tailwindcss": "^3.4.19",
+    "vite": "^5.4.10"
   }
 }

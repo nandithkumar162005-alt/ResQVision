@@ -14,16 +14,19 @@ Features:
 
 from __future__ import annotations
 
+import asyncio
 import inspect
 import math
 import sys
 from contextlib import asynccontextmanager
-from typing import Any
+from typing import Any, Optional
 
-from fastapi import BackgroundTasks, FastAPI, status
+from fastapi import BackgroundTasks, FastAPI, File, Form, HTTPException, UploadFile, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
 
+from pydantic import BaseModel
 from app.config import settings
 from app.schemas import (
     BoundingBox,
@@ -420,6 +423,67 @@ async def trigger_assessment(
         event_id=event.event_id,
         message="Assessment pipeline started. Results will be dispatched to Stream 3.",
     )
+
+
+# The dashboard (a different port) uploads images to /verify-image from the browser.
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+
+@app.post("/verify-image", tags=["image-authenticity"])
+async def verify_image(
+    file: UploadFile = File(...),
+    lat: Optional[float] = Form(None),
+    lng: Optional[float] = Form(None),
+    taken_at: Optional[str] = Form(None),
+    claimed_type: Optional[str] = Form(None),
+) -> dict[str, Any]:
+    """Is this image real, and does the claim about it match public weather / earthquake records?
+    Returns the authenticity verdict plus a context cross-check (EXIF + Open-Meteo + USGS).
+    Indicative only: use alongside NDRF ground confirmation, never as the sole basis for dispatch."""
+    import io as _io
+    from PIL import Image as _Image
+    from app.authenticity import analyze_image  # local import keeps startup light
+    from app.authenticity import context as _ctx
+
+    raw = await file.read()
+    try:
+        auth = analyze_image(raw).to_dict()
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    img = _Image.open(_io.BytesIO(raw))
+    ctx = await asyncio.to_thread(_ctx.build_context, img,
+                                  {"lat": lat, "lng": lng, "taken_at": taken_at, "claimed_type": claimed_type})
+    auth["context"] = ctx
+    auth["summary"] = _ctx.combine(auth, ctx)
+    return {"status": "success", "data": auth}
+
+
+class VerifyMessagePayload(BaseModel):
+    text: str
+    emergency_type: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    location_text: Optional[str] = None
+    people_count: Optional[int] = None
+
+
+@app.post("/verify-message", tags=["message-authenticity"])
+async def verify_message_endpoint(payload: VerifyMessagePayload) -> dict[str, Any]:
+    """Verify whether a citizen SOS message, distress claim, or disaster text report is genuine.
+    Analyzes emergency sincerity, AI-generated synthetic markers, hoax patterns, and
+    cross-references the claim with live Open-Meteo weather and USGS earthquake feeds.
+    """
+    from app.authenticity.message_verifier import analyze_message
+    res = await asyncio.to_thread(
+        analyze_message,
+        text=payload.text,
+        emergency_type=payload.emergency_type,
+        lat=payload.lat,
+        lng=payload.lng,
+        location_text=payload.location_text,
+        people_count=payload.people_count,
+    )
+    return {"status": "success", "data": res}
 
 
 @app.get("/health")

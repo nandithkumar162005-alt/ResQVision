@@ -4,7 +4,7 @@ ResQVision one-click launcher.
 Double-click RUN_DEMO.bat (or the ResQVision.exe built from this file) and it will:
   1. create a Python environment and install everything (first run only)
   2. install the dashboard packages (first run only)
-  3. start Stream 3 (8003), Stream 2 (8002) and the dashboard (5173)
+  3. start Stream 3 (8003), Stream 2 (8002), the portal backend (8004) and the portals (5173)
   4. fire one demo earthquake + one demo flood from Stream 1
   5. open the dashboard and the NDRF verification page in your browser
 
@@ -46,7 +46,7 @@ def run(cmd, cwd=None, **kw):
 
 
 def ensure_python_env():
-    marker = VENV / ".resqvision_installed"
+    marker = VENV / ".resqvision_installed_v4"
     if marker.exists():
         return
     say("First run: setting up Python environment (3-5 minutes, only once)...")
@@ -55,7 +55,7 @@ def ensure_python_env():
     pip = [str(VPY), "-m", "pip", "install", "-q", "--disable-pip-version-check"]
     run(pip + ["--upgrade", "pip"])
     run(pip + ["fastapi", "uvicorn", "pydantic", "pydantic-settings", "python-dotenv", "httpx",
-               "tenacity", "numpy", "scipy", "scikit-learn", "loguru", "shapely"], check=True)
+               "tenacity", "numpy", "scipy", "scikit-learn", "loguru", "shapely", "pillow", "python-multipart"], check=True)
     run(pip + ["-r", str(S1 / "requirements.txt"), "-r", str(S3 / "requirements.txt")], check=True)
     marker.write_text("ok")
 
@@ -131,7 +131,16 @@ def main():
     say("Starting Stream 2 (ML / satellite, mock mode) on :8002 ...")
     start("stream2", uv + ["--port", "8002"], S2, s2_env)
     if not wait_http("http://127.0.0.1:8002/health"):
-        say("Stream 2 did not start. See logs/stream2.log"); stop_all(); sys.exit(1)
+        say("Stream 2 did not start. Last lines of logs/stream2.log:")
+        try: print("".join((ROOT / "logs" / "stream2.log").read_text(errors="ignore").splitlines(True)[-15:]))
+        except Exception: pass
+        stop_all(); sys.exit(1)
+    say("Starting portal backend (Layer 3, accounts + SOS + image check relay) on :8004 ...")
+    start("layer3", ["node", "server/index.js"], S4,
+          {"RESQVISION_API_PORT": "8004", "VITE_STREAM3_BASE_URL": "http://localhost:8003",
+           "IMAGE_ASSESSMENT_PROVIDER_URL": "http://localhost:8002/verify-image"})
+    if not wait_http("http://127.0.0.1:8004/api/v1/health"):
+        say("Portal backend did not start. See logs/layer3.log"); stop_all(); sys.exit(1)
     say("Starting dashboard on :5173 ...")
     start("stream4", "npm run dev -- --port 5173 --host 127.0.0.1", S4)
     if not wait_http("http://127.0.0.1:5173/"):
@@ -163,13 +172,16 @@ def main():
         sys.exit(0 if ok else 1)
 
     if "--no-browser" not in args:
-        webbrowser.open("http://localhost:5173")
+        webbrowser.open("http://localhost:5173/")
         time.sleep(1)
-        webbrowser.open("http://localhost:8003/demo")
+        webbrowser.open("http://localhost:5173/verify")
 
     say("\nEverything is running.")
-    say("  Dashboard : http://localhost:5173   (demo login: pick any role, Rescue = dispatch view)")
-    say("  NDRF page : http://localhost:8003/demo   (click Confirm -> waves 2-5 go out)")
+    say("  Home            : http://localhost:5173/")
+    say("  Verify an image : http://localhost:5173/verify   (upload any photo)")
+    say("  Citizen portal  : http://localhost:5173/citizen/map   citizen@resqvision.local / CitizenDemo!2026")
+    say("  Rescue dashboard: http://localhost:5173/government/overview   officer@ndrf.resqvision.local / OfficerDemo!2026")
+    say("  NDRF confirm/deny page: http://localhost:8003/demo")
     say("  More events: run FIRE_DEMO_EVENT.bat any time")
     say("\nPress Enter here (or close this window) to stop everything.")
     try:

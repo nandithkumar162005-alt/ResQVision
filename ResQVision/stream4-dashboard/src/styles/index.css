@@ -1,0 +1,320 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Manrope', 'Space Grotesk', 'Inter', sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  :focus-visible {
+    outline: 2px solid #f97316;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .glass-dark {
+    background: rgba(20, 23, 28, 0.78);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.36);
+  }
+
+  .glass-dark-subtle {
+    background: rgba(26, 30, 36, 0.68);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-light {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(24, 24, 27, 0.08);
+    box-shadow: 0 10px 28px rgba(24, 24, 27, 0.07);
+  }
+
+  .glass-light-subtle {
+    background: rgba(255, 255, 255, 0.68);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(24, 24, 27, 0.07);
+  }
+}
+
+/* MapLibre popup theming */
+.rv-map-popup-light .maplibregl-popup-content {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #18181b;
+  border: 1px solid rgba(24, 24, 27, 0.1);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 14px 32px rgba(24, 24, 27, 0.16);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.rv-map-popup-light .maplibregl-popup-tip {
+  border-top-color: rgba(255, 255, 255, 0.94);
+}
+
+.rv-map-popup-light .maplibregl-popup-close-button {
+  color: #52525b;
+  font-size: 16px;
+  padding: 4px 8px;
+}
+
+.rv-map-popup-dark .maplibregl-popup-content {
+  background: rgba(20, 23, 28, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #f4f4f5;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.52);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.rv-map-popup-dark .maplibregl-popup-tip {
+  border-top-color: rgba(20, 23, 28, 0.92);
+}
+
+.rv-map-popup-dark .maplibregl-popup-close-button {
+  color: #a1a1aa;
+  font-size: 16px;
+  padding: 4px 8px;
+}
+
+.maplibregl-ctrl-group {
+  border-radius: 12px !important;
+  overflow: hidden;
+  border: 1px solid rgba(113, 113, 122, 0.28) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16) !important;
+}
+
+@keyframes rv-pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.72;
+  }
+  70% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+.rv-marker-pulse {
+  animation: rv-pulse-ring 2.2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+@keyframes rv-cyclone-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes rv-beacon-pulse {
+  0% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.75);
+  }
+  70% {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 22px rgba(239, 68, 68, 0);
+  }
+  100% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+@keyframes rv-dash-flow {
+  0% {
+    stroke-dashoffset: 32;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.rv-cyclone-spin {
+  animation: rv-cyclone-spin 6s linear infinite;
+  transform-origin: center;
+}
+
+.rv-beacon-red {
+  animation: rv-beacon-pulse 1.8s ease-out infinite;
+}
+
+.rv-dash-flow {
+  stroke-dasharray: 6 6;
+  animation: rv-dash-flow 1.2s linear infinite;
+}
+
+@keyframes rv-radar-sweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.rv-radar-sweep {
+  animation: rv-radar-sweep 3.6s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes rv-google-pin-pulse {
+  0% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.75);
+  }
+  65% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 16px rgba(239, 68, 68, 0);
+  }
+  100% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+.rv-google-red-pin {
+  animation: rv-google-pin-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes rv-raindrop-fall {
+  0% {
+    transform: translateY(-12px) scaleY(0.7);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.95;
+  }
+  85% {
+    opacity: 0.95;
+    transform: translateY(38px) scaleY(1.2);
+  }
+  100% {
+    transform: translateY(44px) scaleY(0.3);
+    opacity: 0;
+  }
+}
+
+.rv-raindrop {
+  animation: rv-raindrop-fall 0.9s cubic-bezier(0.4, 0, 0.8, 1) infinite;
+}
+
+@keyframes rv-rain-ripple {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.0);
+    opacity: 0;
+  }
+}
+
+.rv-rain-ripple-ring {
+  animation: rv-rain-ripple 1.6s ease-out infinite;
+  transform-origin: center;
+}
+
+@keyframes rv-hazard-strobe {
+  0%, 100% {
+    transform: scale(0.85);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.9);
+  }
+}
+
+@keyframes rv-hazard-blink {
+  0%, 100% {
+    filter: brightness(1.4);
+    transform: scale(1.08);
+  }
+  50% {
+    filter: brightness(0.8);
+    transform: scale(0.92);
+  }
+}
+
+.rv-hazard-strobe-halo {
+  animation: rv-hazard-strobe 0.8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.rv-hazard-core-light {
+  animation: rv-hazard-blink 0.4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes rv-wave-spread {
+  0% {
+    transform: scale(0.18);
+    opacity: 0.95;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+.rv-wave-spread-1 {
+  animation: rv-wave-spread 3.2s cubic-bezier(0.1, 0.4, 0.3, 1) infinite;
+  transform-origin: center;
+}
+.rv-wave-spread-2 {
+  animation: rv-wave-spread 3.2s cubic-bezier(0.1, 0.4, 0.3, 1) infinite 1.05s;
+  transform-origin: center;
+}
+.rv-wave-spread-3 {
+  animation: rv-wave-spread 3.2s cubic-bezier(0.1, 0.4, 0.3, 1) infinite 2.1s;
+  transform-origin: center;
+}
+
+@keyframes rv-cone-bob {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Apply cone-bob strictly to inner elements, never to the MapLibre Marker wrapper */
+.rv-cone-bob-inner {
+  animation: rv-cone-bob 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-marker-pulse, .rv-cyclone-spin, .rv-beacon-red, .rv-dash-flow, .rv-radar-sweep, .rv-google-red-pin, .rv-raindrop, .rv-rain-ripple-ring, .rv-wave-spread-1, .rv-wave-spread-2, .rv-wave-spread-3, .rv-cone-bob-inner {
+    animation: none !important;
+  }
+}
