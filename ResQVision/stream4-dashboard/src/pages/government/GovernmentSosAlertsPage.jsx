@@ -32,8 +32,9 @@ const RESPONSE_UNITS = [
 ];
 
 export default function GovernmentSosAlertsPage() {
-  const { govSosReports, governmentToken, reviewSosAlert, backendSyncError, useMockData } =
+  const { govSosReports, governmentToken, reviewSosAlert, backendSyncError, useMockData, theme } =
     useAppState();
+  const isDark = theme === 'dark';
   const [filter, setFilter] = useState('all');
   const [selectedRef, setSelectedRef] = useState(govSosReports[0]?.reference || '');
   const [modalAction, setModalAction] = useState(null); // 'reject' | 'request_info' | 'authorize'
@@ -122,14 +123,16 @@ export default function GovernmentSosAlertsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5">
+    <div className={`mx-auto max-w-7xl space-y-5 ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="font-display text-xl font-bold text-white sm:text-2xl">SOS Alerts</h1>
-            {useMockData && <DemoBadge theme="dark" />}
+            <h1 className={`font-display text-xl font-bold sm:text-2xl ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              SOS Alerts
+            </h1>
+            {useMockData && <DemoBadge theme={isDark ? 'dark' : 'light'} />}
           </div>
-          <p className="mt-0.5 text-xs text-zinc-400">
+          <p className={`mt-0.5 text-xs ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
             Human officer review and operational authorization workflow. Citizen reports are not
             automatically verified or dispatched.
           </p>
@@ -137,7 +140,7 @@ export default function GovernmentSosAlertsPage() {
       </div>
 
       {backendSyncError && (
-        <ErrorState theme="dark" title="Unable to fetch SOS queue" message={backendSyncError} />
+        <ErrorState theme={isDark ? 'dark' : 'light'} title="Unable to fetch SOS queue" message={backendSyncError} />
       )}
 
       <div className="flex flex-wrap gap-2">
@@ -153,10 +156,14 @@ export default function GovernmentSosAlertsPage() {
             key={tab.id}
             type="button"
             onClick={() => setFilter(tab.id)}
-            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition cursor-pointer ${
               filter === tab.id
-                ? 'border-orange-500 bg-orange-500/15 text-orange-300'
-                : 'border-charcoal-700 bg-charcoal-900 text-zinc-400 hover:bg-charcoal-800'
+                ? isDark
+                  ? 'border-orange-500 bg-orange-500/15 text-orange-300'
+                  : 'border-orange-500 bg-orange-100 text-orange-900 font-semibold'
+                : isDark
+                ? 'border-charcoal-700 bg-charcoal-900 text-zinc-400 hover:bg-charcoal-800'
+                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100 shadow-sm'
             }`}
           >
             {tab.label}
@@ -166,7 +173,7 @@ export default function GovernmentSosAlertsPage() {
 
       {filtered.length === 0 ? (
         <EmptyState
-          theme="dark"
+          theme={isDark ? 'dark' : 'light'}
           icon={AlertTriangle}
           title="No SOS reports in this queue"
           description={
@@ -186,25 +193,31 @@ export default function GovernmentSosAlertsPage() {
                   key={item.reference}
                   type="button"
                   onClick={() => setSelectedRef(item.reference)}
-                  className={`w-full rounded-2xl border p-4 text-left transition ${
+                  className={`w-full rounded-2xl border p-4 text-left transition cursor-pointer ${
                     chosen
-                      ? 'glass-dark border-orange-500 ring-1 ring-orange-500/40'
-                      : 'glass-dark-subtle border-white/10 hover:border-white/20'
+                      ? isDark
+                        ? 'glass-dark border-orange-500 ring-1 ring-orange-500/40'
+                        : 'bg-orange-50/70 border-orange-500 ring-1 ring-orange-500/40 shadow-sm'
+                      : isDark
+                      ? 'glass-dark-subtle border-white/10 hover:border-white/20'
+                      : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-xs font-bold text-white">
+                    <span className={`font-mono text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                       {item.reference}
                     </span>
-                    <span className="rounded-full bg-charcoal-800 px-2 py-0.5 text-[10px] font-semibold text-orange-300">
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                      isDark ? 'bg-charcoal-800 text-orange-300' : 'bg-orange-100 text-orange-800'
+                    }`}>
                       {item.statusLabel}
                     </span>
                   </div>
-                  <p className="mt-1.5 text-sm font-semibold text-zinc-100">
+                  <p className={`mt-1.5 text-sm font-semibold ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
                     {item.emergencyType}
                   </p>
-                  <p className="mt-1 truncate text-xs text-zinc-400">{item.locationText}</p>
-                  <p className="mt-1.5 flex items-center gap-1.5 font-mono text-[10px] text-zinc-500">
+                  <p className={`mt-1 truncate text-xs ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>{item.locationText}</p>
+                  <p className={`mt-1.5 flex items-center gap-1.5 font-mono text-[10px] ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
                     <Clock className="h-3 w-3" />
                     {formatDateTime(item.submittedAt)}
                   </p>
@@ -215,58 +228,60 @@ export default function GovernmentSosAlertsPage() {
 
           {/* Right Review Workspace */}
           {current && (
-            <section className="glass-dark space-y-5 rounded-2xl p-5 lg:col-span-8">
-              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-charcoal-800 pb-4">
+            <section className={`space-y-5 rounded-2xl p-5 lg:col-span-8 ${isDark ? 'glass-dark' : 'bg-white border border-slate-200 shadow-sm'}`}>
+              <div className={`flex flex-wrap items-start justify-between gap-3 border-b pb-4 ${isDark ? 'border-charcoal-800' : 'border-slate-200'}`}>
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-sm font-bold text-white">
+                    <span className={`font-mono text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                       {current.reference}
                     </span>
-                    {current.is_demo && <DemoBadge theme="dark" />}
+                    {current.is_demo && <DemoBadge theme={isDark ? 'dark' : 'light'} />}
                   </div>
-                  <h2 className="mt-1 font-display text-lg font-bold text-white">
+                  <h2 className={`mt-1 font-display text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                     {current.emergencyType}
                   </h2>
-                  <p className="mt-1 text-xs text-zinc-400">
+                  <p className={`mt-1 text-xs ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
                     Submitted {formatDateTime(current.submittedAt)} · {current.peopleCount}{' '}
                     person(s) needing help · Contact: {current.contactName} ({current.contactPhone})
                   </p>
                 </div>
-                <span className="rounded-full border border-orange-500/40 bg-orange-500/15 px-3 py-1 text-xs font-semibold text-orange-300">
+                <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${
+                  isDark ? 'border-orange-500/40 bg-orange-500/15 text-orange-300' : 'border-orange-300 bg-orange-50 text-orange-800'
+                }`}>
                   {current.statusLabel}
                 </span>
               </div>
 
               {/* Location & Description */}
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border border-charcoal-800 bg-charcoal-950/60 p-3.5 text-xs">
-                  <div className="flex items-center gap-1.5 font-semibold text-zinc-300">
-                    <MapPin className="h-3.5 w-3.5 text-orange-400" />
+                <div className={`rounded-xl border p-3.5 text-xs ${isDark ? 'border-charcoal-800 bg-charcoal-950/60' : 'border-slate-200 bg-slate-50'}`}>
+                  <div className={`flex items-center gap-1.5 font-semibold ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>
+                    <MapPin className="h-3.5 w-3.5 text-orange-500" />
                     Reported Location (
                     {current.locationSource === 'gps' ? 'Device GPS' : 'Manual Correction'})
                   </div>
-                  <p className="mt-1.5 text-zinc-100">{current.locationText}</p>
-                  <p className="mt-1 font-mono text-[11px] text-zinc-400">
+                  <p className={`mt-1.5 ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>{current.locationText}</p>
+                  <p className={`mt-1 font-mono text-[11px] ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
                     {current.lat != null && current.lng != null
                       ? `${Number(current.lat).toFixed(5)}, ${Number(current.lng).toFixed(5)}`
                       : 'Coordinates unavailable'}
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-charcoal-800 bg-charcoal-950/60 p-3.5 text-xs">
-                  <div className="font-semibold text-zinc-300">Incident Description</div>
-                  <p className="mt-1.5 leading-relaxed text-zinc-200">{current.description}</p>
+                <div className={`rounded-xl border p-3.5 text-xs ${isDark ? 'border-charcoal-800 bg-charcoal-950/60' : 'border-slate-200 bg-slate-50'}`}>
+                  <div className={`font-semibold ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>Incident Description</div>
+                  <p className={`mt-1.5 leading-relaxed ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>{current.description}</p>
                 </div>
               </div>
 
               {current.lat != null && current.lng != null && (
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                  <p className={`mb-2 text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
                     Reported Coordinates Inspection
                   </p>
                   <ResQMap
-                    theme="dark"
-                    defaultStyle="dark"
+                    theme={theme}
+                    defaultStyle={isDark ? 'dark' : 'light'}
                     heightClass="h-[200px]"
                     allowFullscreen={false}
                     pickedCoords={{ lat: Number(current.lat), lng: Number(current.lng) }}
@@ -279,11 +294,11 @@ export default function GovernmentSosAlertsPage() {
               {/* Citizen Photographs */}
               <div>
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                  <h3 className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
                     Citizen Photographs ({current.photos?.length || 0})
                   </h3>
                   {current.photos?.length > 0 && (
-                    <span className="text-[11px] text-zinc-400">
+                    <span className={`text-[11px] ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
                       Click to inspect or download full image
                     </span>
                   )}
@@ -293,7 +308,9 @@ export default function GovernmentSosAlertsPage() {
                     {current.photos.map((photo, idx) => (
                       <div
                         key={`${photo.id || photo.name}-${idx}`}
-                        className="group flex flex-col justify-between overflow-hidden rounded-xl border border-charcoal-700 bg-charcoal-950 text-left transition hover:border-orange-500/50"
+                        className={`group flex flex-col justify-between overflow-hidden rounded-xl border text-left transition hover:border-orange-500/50 ${
+                          isDark ? 'border-charcoal-700 bg-charcoal-950' : 'border-slate-200 bg-white shadow-sm'
+                        }`}
                       >
                         <div
                           role="button"
@@ -310,14 +327,16 @@ export default function GovernmentSosAlertsPage() {
                             className="h-32 w-full object-cover transition group-hover:scale-105"
                           />
                         </div>
-                        <div className="flex items-center justify-between gap-1 p-2 text-[11px] text-zinc-300">
+                        <div className={`flex items-center justify-between gap-1 p-2 text-[11px] ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>
                           <span className="truncate" title={photo.caption || photo.name}>
                             {photo.caption || photo.name}
                           </span>
                           <button
                             type="button"
                             onClick={() => downloadImageAttachment(photo, governmentToken)}
-                            className="inline-flex items-center gap-1 rounded-md border border-charcoal-700 bg-charcoal-850 px-2 py-1 text-[10px] font-medium text-zinc-200 transition hover:bg-orange-500 hover:text-white cursor-pointer"
+                            className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-medium transition hover:bg-orange-500 hover:text-white cursor-pointer ${
+                              isDark ? 'border-charcoal-700 bg-charcoal-850 text-zinc-200' : 'border-slate-200 bg-slate-100 text-slate-700'
+                            }`}
                             title="Download original photo"
                           >
                             <Download className="h-3 w-3" />
@@ -328,7 +347,7 @@ export default function GovernmentSosAlertsPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-2 rounded-xl border border-charcoal-800 bg-charcoal-950/50 px-3 py-3 text-xs text-zinc-400">
+                  <p className={`mt-2 rounded-xl border px-3 py-3 text-xs ${isDark ? 'border-charcoal-800 bg-charcoal-950/50 text-zinc-400' : 'border-slate-200 bg-slate-50 text-slate-600'}`}>
                     No photographs attached to this report.
                   </p>
                 )}
@@ -337,9 +356,11 @@ export default function GovernmentSosAlertsPage() {
               {/* AI Image & Message Authenticity Section */}
               <div className="space-y-3">
                 {/* Pre-Rescue AI Intake Verification Summary Banner */}
-                <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-charcoal-700 bg-charcoal-950/80 p-3 text-xs">
-                  <div className="flex items-center gap-2 font-semibold text-zinc-200">
-                    <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                <div className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border p-3 text-xs ${
+                  isDark ? 'border-charcoal-700 bg-charcoal-950/80' : 'border-slate-200 bg-slate-50'
+                }`}>
+                  <div className={`flex items-center gap-2 font-semibold ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>
+                    <ShieldCheck className="h-4 w-4 text-emerald-500" />
                     <span>Pre-Rescue AI Intake Verification</span>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -347,10 +368,10 @@ export default function GovernmentSosAlertsPage() {
                       <span
                         className={`rounded-full px-2 py-0.5 text-[10px] font-mono font-bold ${
                           current.imageAssessment?.verdict === 'AI_GENERATED' || current.imageAssessment?.verdict === 'LIKELY_AI'
-                            ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                            ? isDark ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'bg-red-100 text-red-800 border border-red-300'
                             : current.imageAssessment?.available
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                            : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                            ? isDark ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            : isDark ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-amber-100 text-amber-800 border border-amber-300'
                         }`}
                       >
                         Image: {current.imageAssessment?.available ? (current.imageAssessment.verdict || 'VERIFIED') : 'Pending'}
@@ -359,15 +380,15 @@ export default function GovernmentSosAlertsPage() {
                     <span
                       className={`rounded-full px-2 py-0.5 text-[10px] font-mono font-bold ${
                         current.messageVerification?.verdict === 'PROBABLE_HOAX' || current.messageVerification?.verdict === 'AI_GENERATED'
-                          ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                          ? isDark ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'bg-red-100 text-red-800 border border-red-300'
                           : current.messageVerification?.available
-                          ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                          : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                          ? isDark ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'bg-cyan-100 text-cyan-800 border border-cyan-300'
+                          : isDark ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-amber-100 text-amber-800 border border-amber-300'
                       }`}
                     >
                       Text: {current.messageVerification?.available ? (current.messageVerification.verdict || 'VERIFIED') : 'Pending'}
                     </span>
-                    <span className="text-[10px] text-zinc-400">
+                    <span className={`text-[10px] ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
                       Verified prior to rescue queue display
                     </span>
                   </div>
@@ -379,10 +400,10 @@ export default function GovernmentSosAlertsPage() {
                   const isReal = img?.verdict === 'LIKELY_REAL';
                   const isAi = img?.verdict === 'AI_GENERATED' || img?.verdict === 'LIKELY_AI';
                   const borderCls = isReal
-                    ? 'border-emerald-500/40 bg-emerald-950/20 text-emerald-300'
+                    ? isDark ? 'border-emerald-500/40 bg-emerald-950/20 text-emerald-300' : 'border-emerald-300 bg-emerald-50 text-emerald-900'
                     : isAi
-                    ? 'border-red-500/40 bg-red-950/20 text-red-300'
-                    : 'border-amber-500/30 bg-amber-500/10 text-amber-300';
+                    ? isDark ? 'border-red-500/40 bg-red-950/20 text-red-300' : 'border-red-300 bg-red-50 text-red-900'
+                    : isDark ? 'border-amber-500/30 bg-amber-500/10 text-amber-300' : 'border-amber-300 bg-amber-50 text-amber-900';
 
                   return (
                     <div className={`rounded-xl border p-3.5 text-xs ${borderCls}`}>
@@ -392,23 +413,29 @@ export default function GovernmentSosAlertsPage() {
                           {img?.cautionLabel || 'AI Image Authenticity Assessment'}
                         </span>
                         {img?.ai_probability !== undefined && (
-                          <span className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${isAi ? 'bg-red-500/20 text-red-300 border border-red-500/30' : isReal ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'}`}>
+                          <span className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
+                            isAi
+                              ? isDark ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'bg-red-200 text-red-900'
+                              : isReal
+                              ? isDark ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-emerald-200 text-emerald-900'
+                              : isDark ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-amber-200 text-amber-900'
+                          }`}>
                             {img.ai_probability}% AI Probability
                           </span>
                         )}
-                        {useMockData && <DemoBadge theme="dark" />}
+                        {useMockData && <DemoBadge theme={isDark ? 'dark' : 'light'} />}
                       </div>
-                      <p className="mt-1.5 text-zinc-200">
+                      <p className={`mt-1.5 ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>
                         {img?.summary || 'No photograph submitted or verification service pending.'}
                       </p>
                       {Array.isArray(img?.reasons) && img.reasons.length > 0 && (
-                        <ul className="mt-1.5 list-disc list-inside space-y-0.5 text-[11px] text-zinc-300 opacity-90">
+                        <ul className={`mt-1.5 list-disc list-inside space-y-0.5 text-[11px] opacity-90 ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>
                           {img.reasons.slice(0, 3).map((r, idx) => (
                             <li key={idx}>{r}</li>
                           ))}
                         </ul>
                       )}
-                      <p className="mt-1.5 text-[10px] text-zinc-400">
+                      <p className={`mt-1.5 text-[10px] ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
                         {img?.confidenceCaveat || 'Automated AI image assessment is advisory; NDRF ground confirmation is required.'}
                       </p>
                     </div>
@@ -421,10 +448,10 @@ export default function GovernmentSosAlertsPage() {
                   const isGenuine = mv?.verdict === 'GENUINE_EMERGENCY' || mv?.is_genuine === true;
                   const isHoax = mv?.verdict === 'PROBABLE_HOAX' || mv?.verdict === 'AI_GENERATED';
                   const borderCls = isGenuine
-                    ? 'border-emerald-500/40 bg-emerald-950/20 text-emerald-300'
+                    ? isDark ? 'border-emerald-500/40 bg-emerald-950/20 text-emerald-300' : 'border-emerald-300 bg-emerald-50 text-emerald-900'
                     : isHoax
-                    ? 'border-red-500/40 bg-red-950/20 text-red-300'
-                    : 'border-cyan-500/30 bg-cyan-950/20 text-cyan-300';
+                    ? isDark ? 'border-red-500/40 bg-red-950/20 text-red-300' : 'border-red-300 bg-red-50 text-red-900'
+                    : isDark ? 'border-cyan-500/30 bg-cyan-950/20 text-cyan-300' : 'border-sky-300 bg-sky-50 text-sky-900';
 
                   return (
                     <div className={`rounded-xl border p-3.5 text-xs ${borderCls}`}>
@@ -434,23 +461,29 @@ export default function GovernmentSosAlertsPage() {
                           {mv?.label || 'AI Message & Distress Veracity Analysis'}
                         </span>
                         {mv?.authenticity_score !== undefined && (
-                          <span className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${isHoax ? 'bg-red-500/20 text-red-300 border border-red-500/30' : isGenuine ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'}`}>
+                          <span className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
+                            isHoax
+                              ? isDark ? 'bg-red-500/20 text-red-300 border border-red-500/30' : 'bg-red-200 text-red-900'
+                              : isGenuine
+                              ? isDark ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-emerald-200 text-emerald-900'
+                              : isDark ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'bg-sky-200 text-sky-900'
+                          }`}>
                             {mv.authenticity_score}% Authenticity Score
                           </span>
                         )}
-                        {useMockData && <DemoBadge theme="dark" />}
+                        {useMockData && <DemoBadge theme={isDark ? 'dark' : 'light'} />}
                       </div>
-                      <p className="mt-1.5 text-zinc-200">
+                      <p className={`mt-1.5 ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>
                         {mv?.summary || 'Message veracity evaluated against linguistic sincerity markers and real-time environmental data.'}
                       </p>
                       {Array.isArray(mv?.reasons) && mv.reasons.length > 0 && (
-                        <ul className="mt-1.5 list-disc list-inside space-y-0.5 text-[11px] text-zinc-300 opacity-90">
+                        <ul className={`mt-1.5 list-disc list-inside space-y-0.5 text-[11px] opacity-90 ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>
                           {mv.reasons.slice(0, 3).map((r, idx) => (
                             <li key={idx}>{r}</li>
                           ))}
                         </ul>
                       )}
-                      <p className="mt-1.5 text-[10px] text-zinc-400">
+                      <p className={`mt-1.5 text-[10px] ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
                         {mv?.disclaimer || 'Cross-referenced against live Open-Meteo weather and USGS earthquake feeds.'}
                       </p>
                     </div>
@@ -459,25 +492,25 @@ export default function GovernmentSosAlertsPage() {
               </div>
 
               {/* Human Officer Review Actions */}
-              <div className="space-y-3 rounded-xl border border-charcoal-700 bg-charcoal-850 p-4">
-                <div className="flex items-center gap-2 text-xs font-semibold text-white">
-                  <UserCheck className="h-4 w-4 text-orange-400" />
+              <div className={`space-y-3 rounded-xl border p-4 ${isDark ? 'border-charcoal-700 bg-charcoal-850' : 'border-slate-200 bg-slate-50'}`}>
+                <div className={`flex items-center gap-2 text-xs font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  <UserCheck className="h-4 w-4 text-orange-500" />
                   Officer Human Review Actions
                 </div>
-                <p className="text-[11px] text-zinc-400">
+                <p className={`text-[11px] ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
                   A submitted SOS never automatically dispatches a real rescue team. Operational
                   decisions require an authorized human officer.{' '}
                   {useMockData && '(Demo mode updates local preview only.)'}
                 </p>
                 {actionError && !modalAction && (
-                  <p className="text-xs text-red-300">{actionError}</p>
+                  <p className="text-xs text-red-500">{actionError}</p>
                 )}
                 <div className="flex flex-wrap gap-2.5">
                   <button
                     type="button"
                     disabled={busy}
                     onClick={handleVerify}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-sky-500/40 bg-sky-500/15 px-3.5 py-2 text-xs font-semibold text-sky-200 transition hover:bg-sky-500/25 disabled:opacity-60"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-sky-500/40 bg-sky-500/15 px-3.5 py-2 text-xs font-semibold text-sky-700 dark:text-sky-200 transition hover:bg-sky-500/25 disabled:opacity-60 cursor-pointer"
                   >
                     <CheckCircle2 className="h-3.5 w-3.5" />
                     Accept / Verify
@@ -486,7 +519,7 @@ export default function GovernmentSosAlertsPage() {
                     type="button"
                     disabled={busy}
                     onClick={() => openModal('request_info')}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/40 bg-amber-500/15 px-3.5 py-2 text-xs font-semibold text-amber-200 transition hover:bg-amber-500/25 disabled:opacity-60"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/40 bg-amber-500/15 px-3.5 py-2 text-xs font-semibold text-amber-700 dark:text-amber-200 transition hover:bg-amber-500/25 disabled:opacity-60 cursor-pointer"
                   >
                     <HelpCircle className="h-3.5 w-3.5" />
                     Request Additional Info
@@ -495,7 +528,7 @@ export default function GovernmentSosAlertsPage() {
                     type="button"
                     disabled={busy}
                     onClick={() => openModal('reject')}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-red-500/40 bg-red-500/15 px-3.5 py-2 text-xs font-semibold text-red-200 transition hover:bg-red-500/25 disabled:opacity-60"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-red-500/40 bg-red-500/15 px-3.5 py-2 text-xs font-semibold text-red-700 dark:text-red-200 transition hover:bg-red-500/25 disabled:opacity-60 cursor-pointer"
                   >
                     <XCircle className="h-3.5 w-3.5" />
                     Reject with Reason
@@ -504,7 +537,7 @@ export default function GovernmentSosAlertsPage() {
                     type="button"
                     disabled={busy}
                     onClick={() => openModal('authorize')}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-orange-500 px-4 py-2 text-xs font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-orange-500 px-4 py-2 text-xs font-semibold text-white transition hover:bg-orange-600 disabled:opacity-60 cursor-pointer shadow-sm"
                   >
                     <ShieldCheck className="h-3.5 w-3.5" />
                     Authorize Appropriate Operation
@@ -514,20 +547,22 @@ export default function GovernmentSosAlertsPage() {
 
               {/* Officer Audit Log */}
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                <h3 className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
                   Review &amp; Decision Audit Log
                 </h3>
                 <div className="mt-2 space-y-2">
                   {(current.auditTrail || []).map((entry, idx) => (
                     <div
                       key={idx}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-charcoal-800 bg-charcoal-950/50 px-3 py-2 text-xs"
+                      className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 text-xs ${
+                        isDark ? 'border-charcoal-800 bg-charcoal-950/50' : 'border-slate-200 bg-slate-50'
+                      }`}
                     >
                       <div>
-                        <span className="font-semibold text-zinc-200">{entry.actor}: </span>
-                        <span className="text-zinc-300">{entry.action}</span>
+                        <span className={`font-semibold ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>{entry.actor}: </span>
+                        <span className={isDark ? 'text-zinc-300' : 'text-slate-700'}>{entry.action}</span>
                       </div>
-                      <span className="font-mono text-[10px] text-zinc-500">
+                      <span className={`font-mono text-[10px] ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
                         {formatDateTime(entry.at)}
                       </span>
                     </div>
@@ -543,7 +578,7 @@ export default function GovernmentSosAlertsPage() {
       <ModalDialog
         open={Boolean(modalAction)}
         onClose={() => setModalAction(null)}
-        theme="dark"
+        theme={isDark ? 'dark' : 'light'}
         subtitle={`Officer Review · ${current?.reference || ''}`}
         title={
           modalAction === 'reject'
@@ -556,7 +591,7 @@ export default function GovernmentSosAlertsPage() {
         <form onSubmit={submitDecisionModal} className="space-y-4 text-xs">
           {modalAction === 'reject' && (
             <div>
-              <label htmlFor="rej-reason" className="block font-semibold text-zinc-200">
+              <label htmlFor="rej-reason" className={`block font-semibold ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>
                 Rejection Reason *
               </label>
               <input
@@ -565,14 +600,16 @@ export default function GovernmentSosAlertsPage() {
                 value={reason}
                 onChange={e => setReason(e.target.value)}
                 placeholder="e.g., Duplicate report for already-evacuated sector"
-                className="mt-1 w-full rounded-xl border border-charcoal-700 bg-charcoal-850 px-3 py-2.5 text-sm text-white"
+                className={`mt-1 w-full rounded-xl border px-3 py-2.5 text-sm ${
+                  isDark ? 'border-charcoal-700 bg-charcoal-850 text-white' : 'border-slate-300 bg-white text-slate-900'
+                }`}
               />
             </div>
           )}
 
           {modalAction === 'request_info' && (
             <div>
-              <label htmlFor="req-info" className="block font-semibold text-zinc-200">
+              <label htmlFor="req-info" className={`block font-semibold ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>
                 Information Needed from Citizen *
               </label>
               <textarea
@@ -581,7 +618,9 @@ export default function GovernmentSosAlertsPage() {
                 value={infoPrompt}
                 onChange={e => setInfoPrompt(e.target.value)}
                 placeholder="e.g., Please confirm nearest street intersection and whether anyone requires urgent medical transport."
-                className="mt-1 w-full rounded-xl border border-charcoal-700 bg-charcoal-850 px-3 py-2.5 text-sm text-white"
+                className={`mt-1 w-full rounded-xl border px-3 py-2.5 text-sm ${
+                  isDark ? 'border-charcoal-700 bg-charcoal-850 text-white' : 'border-slate-300 bg-white text-slate-900'
+                }`}
               />
             </div>
           )}
@@ -589,24 +628,26 @@ export default function GovernmentSosAlertsPage() {
           {modalAction === 'authorize' && (
             <>
               <div>
-                <label htmlFor="auth-unit" className="block font-semibold text-zinc-200">
+                <label htmlFor="auth-unit" className={`block font-semibold ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>
                   Assign Authorized Response Team *
                 </label>
                 <select
                   id="auth-unit"
                   value={selectedUnit}
                   onChange={e => setSelectedUnit(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-charcoal-700 bg-charcoal-850 px-3 py-2.5 text-sm text-white"
+                  className={`mt-1 w-full rounded-xl border px-3 py-2.5 text-sm ${
+                    isDark ? 'border-charcoal-700 bg-charcoal-850 text-white' : 'border-slate-300 bg-white text-slate-900'
+                  }`}
                 >
                   {RESPONSE_UNITS.map(u => (
-                    <option key={u} value={u}>
+                    <option key={u} value={u} className={isDark ? 'bg-zinc-900 text-white' : 'bg-white text-slate-900'}>
                       {u}
                     </option>
                   ))}
                 </select>
               </div>
               <div>
-                <label htmlFor="auth-notes" className="block font-semibold text-zinc-200">
+                <label htmlFor="auth-notes" className={`block font-semibold ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>
                   Operational Authorization Note
                 </label>
                 <textarea
@@ -615,10 +656,14 @@ export default function GovernmentSosAlertsPage() {
                   value={actionNotes}
                   onChange={e => setActionNotes(e.target.value)}
                   placeholder="Optional instructions or staging notes…"
-                  className="mt-1 w-full rounded-xl border border-charcoal-700 bg-charcoal-850 px-3 py-2.5 text-sm text-white"
+                  className={`mt-1 w-full rounded-xl border px-3 py-2.5 text-sm ${
+                    isDark ? 'border-charcoal-700 bg-charcoal-850 text-white' : 'border-slate-300 bg-white text-slate-900'
+                  }`}
                 />
               </div>
-              <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-[11px] text-amber-200">
+              <p className={`rounded-lg border p-2.5 text-[11px] ${
+                isDark ? 'border-amber-500/30 bg-amber-500/10 text-amber-200' : 'border-amber-300 bg-amber-50 text-amber-900'
+              }`}>
                 Human decision recorded in ResQVision. Real-world team dispatch requires external
                 agency CAD integration.
               </p>
@@ -635,14 +680,16 @@ export default function GovernmentSosAlertsPage() {
             <button
               type="button"
               onClick={() => setModalAction(null)}
-              className="rounded-xl border border-charcoal-700 px-4 py-2 font-semibold text-zinc-300 hover:bg-charcoal-800"
+              className={`rounded-xl border px-4 py-2 font-semibold cursor-pointer ${
+                isDark ? 'border-charcoal-700 text-zinc-300 hover:bg-charcoal-800' : 'border-slate-300 text-slate-700 hover:bg-slate-100'
+              }`}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={busy}
-              className="rounded-xl bg-orange-500 px-4 py-2 font-semibold text-white hover:bg-orange-600 disabled:opacity-60"
+              className="rounded-xl bg-orange-500 px-4 py-2 font-semibold text-white hover:bg-orange-600 disabled:opacity-60 cursor-pointer shadow-sm"
             >
               {busy ? 'Saving…' : 'Record Officer Decision'}
             </button>
@@ -654,7 +701,7 @@ export default function GovernmentSosAlertsPage() {
       <ModalDialog
         open={Boolean(previewPhoto)}
         onClose={() => setPreviewPhoto(null)}
-        theme="dark"
+        theme={isDark ? 'dark' : 'light'}
         subtitle="Citizen Attachment"
         title={previewPhoto?.caption || previewPhoto?.name || 'Photograph'}
       >
@@ -666,13 +713,13 @@ export default function GovernmentSosAlertsPage() {
               alt={previewPhoto.caption || previewPhoto.name}
               className="max-h-[60vh] w-full rounded-xl object-contain bg-black/40"
             />
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-charcoal-800 pt-3">
-              <div className="text-xs text-zinc-400">
-                <span className="font-semibold text-zinc-200">
+            <div className={`flex flex-wrap items-center justify-between gap-3 border-t pt-3 ${isDark ? 'border-charcoal-800' : 'border-slate-200'}`}>
+              <div className="text-xs">
+                <span className={`font-semibold ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>
                   {previewPhoto.caption || previewPhoto.name}
                 </span>
                 {previewPhoto.sizeBytes && (
-                  <span className="ml-2 font-mono text-[11px] text-zinc-500">
+                  <span className={`ml-2 font-mono text-[11px] ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
                     ({Math.max(1, Math.round(previewPhoto.sizeBytes / 1024))} KB)
                   </span>
                 )}

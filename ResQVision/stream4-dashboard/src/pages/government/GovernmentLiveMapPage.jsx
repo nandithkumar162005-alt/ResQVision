@@ -28,7 +28,8 @@ const GOV_LAYERS = [
 
 export default function GovernmentLiveMapPage() {
   const { searchTarget } = useOutletContext() || {};
-  const { useMockData } = useAppState();
+  const { useMockData, theme } = useAppState();
+  const isDark = theme === 'dark';
   const {
     data: disasterRes,
     error: disasterError,
@@ -85,21 +86,23 @@ export default function GovernmentLiveMapPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-4">
+    <div className={`mx-auto max-w-7xl space-y-4 ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="font-display text-xl font-bold text-white sm:text-2xl">Live Map</h1>
-            {useMockData && <DemoBadge theme="dark" />}
+            <h1 className={`font-display text-xl font-bold sm:text-2xl ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Live Map
+            </h1>
+            {useMockData && <DemoBadge theme={isDark ? 'dark' : 'light'} />}
           </div>
-          <p className="mt-0.5 text-xs text-zinc-400">
+          <p className={`mt-0.5 text-xs ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
             Damage zones use red for destroyed and amber for major_damage. Authorized rescue units
             appear only when authorized and available.
           </p>
         </div>
 
         <LocationSearch
-          theme="dark"
+          theme={isDark ? 'dark' : 'light'}
           disasters={disasters}
           onSelectLocation={item => {
             setFocusTarget({ lat: item.lat, lng: item.lng, zoom: item.zoom || 12, nonce: Date.now() });
@@ -110,7 +113,7 @@ export default function GovernmentLiveMapPage() {
 
       {disasterError && (
         <ErrorState
-          theme="dark"
+          theme={isDark ? 'dark' : 'light'}
           title="Unable to connect to GET /api/active-disasters"
           message={disasterError.message}
           onRetry={() => retryDisasters()}
@@ -127,9 +130,9 @@ export default function GovernmentLiveMapPage() {
       )}
 
       {/* Map Layer Controls */}
-      <div className="glass-dark rounded-2xl p-3">
-        <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-zinc-300">
-          <Layers className="h-3.5 w-3.5 text-orange-400" />
+      <div className={`rounded-2xl p-3 ${isDark ? 'glass-dark' : 'bg-white border border-slate-200 shadow-sm'}`}>
+        <div className={`mb-2 flex items-center gap-1.5 text-xs font-semibold ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>
+          <Layers className="h-3.5 w-3.5 text-orange-500" />
           Map Layer Controls
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -141,10 +144,14 @@ export default function GovernmentLiveMapPage() {
                 type="button"
                 aria-pressed={active}
                 onClick={() => toggleLayer(ctrl.key)}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium transition ${
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium transition cursor-pointer ${
                   active
-                    ? 'border-orange-500/60 bg-orange-500/15 text-orange-200'
-                    : 'border-charcoal-700 bg-charcoal-850 text-zinc-400 hover:bg-charcoal-800'
+                    ? isDark
+                      ? 'border-orange-500/60 bg-orange-500/15 text-orange-200'
+                      : 'border-orange-500 bg-orange-100 text-orange-900 font-semibold'
+                    : isDark
+                    ? 'border-charcoal-700 bg-charcoal-850 text-zinc-400 hover:bg-charcoal-800'
+                    : 'border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
                 <span className={`h-2 w-2 rounded-full ${ctrl.dot}`} />
@@ -157,11 +164,11 @@ export default function GovernmentLiveMapPage() {
 
       {/* Main Live Map */}
       {disasterLoading ? (
-        <LoadingSkeleton theme="dark" variant="map" />
+        <LoadingSkeleton theme={isDark ? 'dark' : 'light'} variant="map" />
       ) : (
         <ResQMap
-          theme="dark"
-          defaultStyle="dark"
+          theme={theme}
+          defaultStyle={isDark ? 'dark' : 'light'}
           disasters={disasters}
           resources={resources}
           verifiedRoutes={verifiedRoutes}
@@ -176,13 +183,13 @@ export default function GovernmentLiveMapPage() {
       )}
 
       {/* Compact Location Details */}
-      <section className="glass-dark rounded-2xl p-4 sm:p-5">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-charcoal-800 pb-3">
+      <section className={`rounded-2xl p-4 sm:p-5 ${isDark ? 'glass-dark' : 'bg-white border border-slate-200 shadow-sm'}`}>
+        <div className={`flex flex-wrap items-center justify-between gap-2 border-b pb-3 ${isDark ? 'border-charcoal-800' : 'border-slate-200'}`}>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-orange-400">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-orange-500">
               Compact Location Details
             </p>
-            <h2 className="mt-0.5 text-base font-bold text-white">
+            <h2 className={`mt-0.5 text-base font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
               {activeDetail?.kind === 'unit'
                 ? activeDetail.unit.name
                 : activeDetail?.kind === 'resource'
@@ -194,13 +201,13 @@ export default function GovernmentLiveMapPage() {
                 : 'Select a map marker'}
             </h2>
           </div>
-          {useMockData && <DemoBadge theme="dark" />}
+          {useMockData && <DemoBadge theme={isDark ? 'dark' : 'light'} />}
         </div>
 
         {!activeDetail ? (
           <div className="mt-4">
             <EmptyState
-              theme="dark"
+              theme={isDark ? 'dark' : 'light'}
               icon={MapPin}
               title="No location selected"
               description="Click any disaster, damage zone, resource, or authorized unit marker on the map."
@@ -209,16 +216,16 @@ export default function GovernmentLiveMapPage() {
         ) : activeDetail.kind === 'unit' ? (
           <div className="mt-4 grid gap-3 text-xs sm:grid-cols-3">
             <div>
-              <p className="text-zinc-400">Agency</p>
-              <p className="mt-0.5 font-semibold text-white">{activeDetail.unit.agency}</p>
+              <p className={isDark ? 'text-zinc-400' : 'text-slate-500'}>Agency</p>
+              <p className={`mt-0.5 font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{activeDetail.unit.agency}</p>
             </div>
             <div>
-              <p className="text-zinc-400">Status</p>
-              <p className="mt-0.5 font-semibold text-orange-300">{activeDetail.unit.status}</p>
+              <p className={isDark ? 'text-zinc-400' : 'text-slate-500'}>Status</p>
+              <p className="mt-0.5 font-semibold text-orange-600 dark:text-orange-300">{activeDetail.unit.status}</p>
             </div>
             <div>
-              <p className="text-zinc-400">Authorized Coordinates</p>
-              <p className="mt-0.5 font-mono text-zinc-200">
+              <p className={isDark ? 'text-zinc-400' : 'text-slate-500'}>Authorized Coordinates</p>
+              <p className={`mt-0.5 font-mono ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>
                 {activeDetail.unit.lat}, {activeDetail.unit.lng}
               </p>
             </div>
@@ -226,25 +233,25 @@ export default function GovernmentLiveMapPage() {
         ) : activeDetail.kind === 'resource' ? (
           <div className="mt-4 grid gap-3 text-xs sm:grid-cols-3">
             <div>
-              <p className="text-zinc-400">Type</p>
-              <p className="mt-0.5 font-semibold capitalize text-white">
+              <p className={isDark ? 'text-zinc-400' : 'text-slate-500'}>Type</p>
+              <p className={`mt-0.5 font-semibold capitalize ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 {statusReadable(activeDetail.resource.category)}
               </p>
             </div>
             <div>
-              <p className="text-zinc-400">Address</p>
-              <p className="mt-0.5 text-zinc-200">{activeDetail.resource.address}</p>
+              <p className={isDark ? 'text-zinc-400' : 'text-slate-500'}>Address</p>
+              <p className={`mt-0.5 ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>{activeDetail.resource.address}</p>
             </div>
             <div>
-              <p className="text-zinc-400">Status</p>
-              <p className="mt-0.5 text-zinc-200">{activeDetail.resource.status}</p>
+              <p className={isDark ? 'text-zinc-400' : 'text-slate-500'}>Status</p>
+              <p className={`mt-0.5 ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>{activeDetail.resource.status}</p>
             </div>
           </div>
         ) : (
           <div className="mt-4 grid gap-3 text-xs sm:grid-cols-4">
             <div>
-              <p className="text-zinc-400">Location / Sector</p>
-              <p className="mt-0.5 font-semibold text-white">
+              <p className={isDark ? 'text-zinc-400' : 'text-slate-500'}>Location / Sector</p>
+              <p className={`mt-0.5 font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 {activeDetail.zone?.locality ||
                   [
                     activeDetail.event?.city,
@@ -256,21 +263,21 @@ export default function GovernmentLiveMapPage() {
               </p>
             </div>
             <div>
-              <p className="text-zinc-400">Zone Classification</p>
-              <p className="mt-0.5 font-semibold text-amber-300">
+              <p className={isDark ? 'text-zinc-400' : 'text-slate-500'}>Zone Classification</p>
+              <p className="mt-0.5 font-semibold text-amber-600 dark:text-amber-300">
                 {activeDetail.zone?.damage_classification || 'Event Overview'}
               </p>
             </div>
             <div>
-              <p className="text-zinc-400">Affected Population (Estimate)</p>
-              <p className="mt-0.5 font-mono font-bold text-white">
+              <p className={isDark ? 'text-zinc-400' : 'text-slate-500'}>Affected Population (Estimate)</p>
+              <p className={`mt-0.5 font-mono font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 {formatNumber(activeDetail.event?.affected_population_estimate)}
               </p>
             </div>
             <div>
-              <p className="text-zinc-400">Source &amp; Updated</p>
-              <p className="mt-0.5 text-zinc-200">{activeDetail.event?.source}</p>
-              <p className="text-[11px] text-zinc-500">
+              <p className={isDark ? 'text-zinc-400' : 'text-slate-500'}>Source &amp; Updated</p>
+              <p className={`mt-0.5 ${isDark ? 'text-zinc-200' : 'text-slate-800'}`}>{activeDetail.event?.source}</p>
+              <p className={`text-[11px] ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>
                 {formatDateTime(activeDetail.event?.updated_at)}
               </p>
             </div>

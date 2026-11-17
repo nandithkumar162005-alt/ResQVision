@@ -179,6 +179,10 @@ export function AppProvider({ children }) {
   }, [governmentToken, refreshGovernmentData]);
 
   const loginCitizen = useCallback(async credentials => {
+    // Explicitly wipe government session so citizen cannot jump into rescue dashboard without re-authenticating
+    setGovernmentSession(null);
+    writeSession('rv_gov_session', null);
+
     if (USE_MOCK_DATA) {
       const session = {
         token: 'demo-citizen-token',

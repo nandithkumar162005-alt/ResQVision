@@ -85,7 +85,7 @@ export default function TopNavBar() {
           </Link>
 
           <Link
-            to="/government/overview"
+            to={isGovernment && governmentUser ? '/government/overview' : '/login?role=government'}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition ${
               isGovernment
                 ? 'bg-[#DC2626] text-white shadow-md'

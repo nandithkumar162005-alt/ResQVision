@@ -50,8 +50,6 @@ const GOVERNMENT_NAV_GROUPS = [
     group: 'INTELLIGENCE',
     items: [
       { to: '/government/intelligence/analytics', label: 'Analytics', icon: BarChart3 },
-      { to: '/government/intelligence/multiwave', label: 'Multiwave', icon: Waves },
-      { to: '/government/intelligence/drone', label: 'Drone Feeds', icon: Plane },
       { to: '/government/intelligence/radar', label: 'Radar / Weather', icon: Radar },
       { to: '/government/intelligence/damage', label: 'Damage Assessment', icon: AlertOctagon }
     ]

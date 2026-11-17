@@ -15,6 +15,7 @@ import {
 import ResQMap from '../../components/shared/ResQMap.jsx';
 import { DemoBadge } from '../../components/shared/UiStates.jsx';
 import { useAppState } from '../../context/AppContext.jsx';
+import { findIndianLocation, INDIA_LOCATION_INDEX } from '../../data/mockData.js';
 import { downloadSosReceiptPdf } from '../../utils/pdfReceipt.js';
 
 const EMERGENCY_TYPES = [
@@ -25,6 +26,21 @@ const EMERGENCY_TYPES = [
   'Fire / Smoke Emergency',
   'Medical Trauma / Trapped Persons',
   'Other Urgent Assistance'
+];
+
+const POPULAR_CITIES = [
+  { name: 'Hyderabad', state: 'Telangana', lat: '17.4150', lng: '78.4867' },
+  { name: 'Mumbai', state: 'Maharashtra', lat: '19.0760', lng: '72.8777' },
+  { name: 'Bengaluru', state: 'Karnataka', lat: '12.9716', lng: '77.5946' },
+  { name: 'New Delhi', state: 'Delhi', lat: '28.6139', lng: '77.2090' },
+  { name: 'Chennai', state: 'Tamil Nadu', lat: '13.0827', lng: '80.2707' },
+  { name: 'Kolkata', state: 'West Bengal', lat: '22.5726', lng: '88.3639' },
+  { name: 'Pune', state: 'Maharashtra', lat: '18.5204', lng: '73.8567' },
+  { name: 'Ahmedabad', state: 'Gujarat', lat: '23.0225', lng: '72.5714' },
+  { name: 'Jaipur', state: 'Rajasthan', lat: '26.9124', lng: '75.7873' },
+  { name: 'Visakhapatnam', state: 'Andhra Pradesh', lat: '17.7380', lng: '83.3180' },
+  { name: 'Vijayawada', state: 'Andhra Pradesh', lat: '16.5190', lng: '80.6280' },
+  { name: 'Kochi', state: 'Kerala', lat: '9.9312', lng: '76.2673' }
 ];
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -87,15 +103,80 @@ export default function CitizenSosPage() {
     );
   };
 
+  const handleSelectQuickCity = (city) => {
+    setDistrictName(city.name);
+    setStateName(city.state);
+    setLat(city.lat);
+    setLng(city.lng);
+    setLocationSource('manual');
+    setMapFocus({ lat: parseFloat(city.lat), lng: parseFloat(city.lng), zoom: 12.5, nonce: Date.now() });
+    setGpsStatus(`Map centered on ${city.name}, ${city.state}. Click map or edit coordinates to fine-tune location.`);
+  };
+
+  const handleDistrictChange = (val) => {
+    setDistrictName(val);
+    const match = findIndianLocation(val);
+    if (match) {
+      if (!stateName) setStateName(match.state);
+      const newLat = match.lat.toFixed(5);
+      const newLng = match.lng.toFixed(5);
+      setLat(newLat);
+      setLng(newLng);
+      setMapFocus({ lat: match.lat, lng: match.lng, zoom: match.zoom || 12.5, nonce: Date.now() });
+    }
+  };
+
+  const handleLocationTextChange = (val) => {
+    setLocationText(val);
+    const match = findIndianLocation(val);
+    if (match && !districtName) {
+      setDistrictName(match.city);
+      if (!stateName) setStateName(match.state);
+      const newLat = match.lat.toFixed(5);
+      const newLng = match.lng.toFixed(5);
+      setLat(newLat);
+      setLng(newLng);
+      setMapFocus({ lat: match.lat, lng: match.lng, zoom: match.zoom || 12.5, nonce: Date.now() });
+    }
+  };
+
+  const handleLatChange = (newLat) => {
+    setLat(newLat);
+    setLocationSource('manual');
+    const pLat = parseFloat(newLat);
+    const pLng = parseFloat(lng);
+    if (Number.isFinite(pLat) && Number.isFinite(pLng) && pLat >= -90 && pLat <= 90 && pLng >= -180 && pLng <= 180) {
+      setMapFocus({ lat: pLat, lng: pLng, zoom: 13, nonce: Date.now() });
+    }
+  };
+
+  const handleLngChange = (newLng) => {
+    setLng(newLng);
+    setLocationSource('manual');
+    const pLat = parseFloat(lat);
+    const pLng = parseFloat(newLng);
+    if (Number.isFinite(pLat) && Number.isFinite(pLng) && pLat >= -90 && pLat <= 90 && pLng >= -180 && pLng <= 180) {
+      setMapFocus({ lat: pLat, lng: pLng, zoom: 13, nonce: Date.now() });
+    }
+  };
+
   const centerMapOnInputs = () => {
     const pLat = Number(lat);
     const pLng = Number(lng);
-    if (!Number.isFinite(pLat) || !Number.isFinite(pLng) || pLat < -90 || pLat > 90 || pLng < -180 || pLng > 180) {
-      setFormError('Enter valid coordinates (Latitude -90..90, Longitude -180..180) before centering.');
+    if (Number.isFinite(pLat) && Number.isFinite(pLng) && pLat >= -90 && pLat <= 90 && pLng >= -180 && pLng <= 180) {
+      setFormError('');
+      setMapFocus({ lat: pLat, lng: pLng, zoom: 13.5, nonce: Date.now() });
       return;
     }
-    setFormError('');
-    setMapFocus({ lat: pLat, lng: pLng, zoom: 13.5, nonce: Date.now() });
+    const loc = findIndianLocation(districtName || stateName || locationText);
+    if (loc) {
+      setFormError('');
+      setLat(loc.lat.toFixed(5));
+      setLng(loc.lng.toFixed(5));
+      setMapFocus({ lat: loc.lat, lng: loc.lng, zoom: loc.zoom || 12.5, nonce: Date.now() });
+      return;
+    }
+    setFormError('Enter valid coordinates (Latitude -90..90, Longitude -180..180) or city name before centering.');
   };
 
   const handlePhotoUpload = e => {
@@ -502,6 +583,35 @@ export default function CitizenSosPage() {
 
             {gpsStatus && <p className={`text-[11px] ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>{gpsStatus}</p>}
 
+            {/* Quick City Presets */}
+            <div>
+              <span className={`block text-[11px] font-medium mb-1.5 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                Quick City Location Focus (Click any city to jump map):
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {POPULAR_CITIES.map(c => {
+                  const isCurrent = districtName.toLowerCase().includes(c.name.toLowerCase());
+                  return (
+                    <button
+                      key={c.name}
+                      type="button"
+                      onClick={() => handleSelectQuickCity(c)}
+                      className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-medium transition cursor-pointer ${
+                        isCurrent
+                          ? 'bg-orange-500 text-white font-semibold shadow-sm'
+                          : isDark
+                          ? 'border border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white'
+                          : 'border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100'
+                      }`}
+                    >
+                      <MapPin className="h-3 w-3 text-orange-400" />
+                      <span>{c.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label htmlFor="sos-state" className={`block text-[11px] font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
@@ -512,7 +622,7 @@ export default function CitizenSosPage() {
                   type="text"
                   value={stateName}
                   onChange={e => setStateName(e.target.value)}
-                  placeholder="e.g., Telangana"
+                  placeholder="e.g., Maharashtra, Karnataka, Telangana"
                   className={`mt-1 w-full rounded-xl border px-3 py-2 text-xs ${
                     isDark
                       ? 'border-white/10 bg-white/5 text-white placeholder-zinc-500'
@@ -522,14 +632,14 @@ export default function CitizenSosPage() {
               </div>
               <div>
                 <label htmlFor="sos-district" className={`block text-[11px] font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                  District / City
+                  District / City (Auto-centers map)
                 </label>
                 <input
                   id="sos-district"
                   type="text"
                   value={districtName}
-                  onChange={e => setDistrictName(e.target.value)}
-                  placeholder="e.g., Hyderabad"
+                  onChange={e => handleDistrictChange(e.target.value)}
+                  placeholder="e.g., Mumbai, Bengaluru, Delhi, Chennai"
                   className={`mt-1 w-full rounded-xl border px-3 py-2 text-xs ${
                     isDark
                       ? 'border-white/10 bg-white/5 text-white placeholder-zinc-500'
@@ -547,8 +657,8 @@ export default function CitizenSosPage() {
                 id="sos-address"
                 type="text"
                 value={locationText}
-                onChange={e => setLocationText(e.target.value)}
-                placeholder="e.g., Bholakpur Lane 4 near Community Hall, Musheerabad"
+                onChange={e => handleLocationTextChange(e.target.value)}
+                placeholder="e.g., Bandra West near Station, Mumbai or Musheerabad Community Hall, Hyderabad"
                 className={`mt-1 w-full rounded-xl border px-3.5 py-2.5 text-sm ${
                   isDark
                     ? 'border-white/10 bg-white/5 text-white placeholder-zinc-500'
@@ -560,16 +670,13 @@ export default function CitizenSosPage() {
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <label htmlFor="sos-lat" className={`block text-[11px] font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                  Latitude (Manual Correction)
+                  Latitude (Manual Correction - Updates Map)
                 </label>
                 <input
                   id="sos-lat"
                   type="text"
                   value={lat}
-                  onChange={e => {
-                    setLat(e.target.value);
-                    setLocationSource('manual');
-                  }}
+                  onChange={e => handleLatChange(e.target.value)}
                   className={`mt-1 w-full rounded-xl border px-3 py-2 font-mono text-xs ${
                     isDark
                       ? 'border-white/10 bg-white/5 text-white'
@@ -579,16 +686,13 @@ export default function CitizenSosPage() {
               </div>
               <div>
                 <label htmlFor="sos-lng" className={`block text-[11px] font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                  Longitude (Manual Correction)
+                  Longitude (Manual Correction - Updates Map)
                 </label>
                 <input
                   id="sos-lng"
                   type="text"
                   value={lng}
-                  onChange={e => {
-                    setLng(e.target.value);
-                    setLocationSource('manual');
-                  }}
+                  onChange={e => handleLngChange(e.target.value)}
                   className={`mt-1 w-full rounded-xl border px-3 py-2 font-mono text-xs ${
                     isDark
                       ? 'border-white/10 bg-white/5 text-white'
@@ -607,9 +711,12 @@ export default function CitizenSosPage() {
               pickedCoords={validCoords ? { lat: parsedLat, lng: parsedLng } : null}
               focusTarget={mapFocus}
               onPickLocation={coords => {
-                setLat(String(coords.lat));
-                setLng(String(coords.lng));
+                const nextLat = coords.lat.toFixed(5);
+                const nextLng = coords.lng.toFixed(5);
+                setLat(nextLat);
+                setLng(nextLng);
                 setLocationSource('manual');
+                setMapFocus({ lat: coords.lat, lng: coords.lng, zoom: 14, nonce: Date.now() });
               }}
               titleLabel="SOS manual location pin picker"
             />

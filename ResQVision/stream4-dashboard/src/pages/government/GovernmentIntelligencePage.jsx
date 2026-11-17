@@ -1,17 +1,9 @@
 import { useMemo, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
-  Activity,
   AlertOctagon,
   BarChart3,
-  Camera,
-  Layers,
-  Plane,
-  Radar,
-  Radio,
-  ShieldAlert,
-  Waves,
-  Wrench
+  Radar
 } from 'lucide-react';
 import { DemoBadge } from '../../components/shared/UiStates.jsx';
 import { useAppState } from '../../context/AppContext.jsx';
@@ -19,8 +11,6 @@ import { useActiveDisasters } from '../../hooks/useDashboardData.js';
 
 const INTELLIGENCE_TABS = [
   { id: 'analytics', label: 'Operational Analytics', icon: BarChart3 },
-  { id: 'multiwave', label: 'Multiwave / Aftershocks', icon: Waves },
-  { id: 'drone', label: 'Aerial Drone Feeds', icon: Plane },
   { id: 'radar', label: 'Doppler Radar / Weather', icon: Radar },
   { id: 'damage', label: 'Damage Assessment', icon: AlertOctagon }
 ];
@@ -28,7 +18,8 @@ const INTELLIGENCE_TABS = [
 export default function GovernmentIntelligencePage() {
   const { tab } = useParams();
   const [activeTab, setActiveTab] = useState(tab || 'analytics');
-  const { govSosReports, rescueOperations, casualtyRecord, useMockData } = useAppState();
+  const { theme, govSosReports, rescueOperations, casualtyRecord, useMockData } = useAppState();
+  const isDark = theme === 'dark';
   const { data: disasterData } = useActiveDisasters();
 
   const activeEvents = disasterData?.active_disasters || [];
@@ -57,24 +48,28 @@ export default function GovernmentIntelligencePage() {
     };
   }, [govSosReports, rescueOperations]);
 
+  const cardClass = isDark
+    ? 'border-white/10 bg-white/5 text-zinc-200'
+    : 'border-slate-200 bg-white text-slate-800 shadow-sm';
+
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-[#0B0D10] text-zinc-100">
+    <div className={`flex flex-col min-h-[calc(100vh-4rem)] transition-colors ${isDark ? 'bg-[#0B0D10] text-zinc-100' : 'bg-slate-50 text-slate-900'}`}>
       {/* Top Header */}
-      <div className="glass-dark border-b border-white/10 px-4 sm:px-6 py-4 shrink-0">
+      <div className={`border-b px-4 sm:px-6 py-4 shrink-0 ${isDark ? 'glass-dark border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-white tracking-tight">
-                Disaster Intelligence & Sensing Modules
+              <h1 className={`text-lg font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Disaster Intelligence &amp; Sensing Modules
               </h1>
-              {useMockData && <DemoBadge label="Intelligence Subsystem" />}
+              {useMockData && <DemoBadge label="Intelligence Subsystem" theme={isDark ? 'dark' : 'light'} />}
             </div>
-            <p className="text-xs text-zinc-400">
-              Aggregated sensory data, radar telemetry, spatial multiwave analysis, and damage metrics.
+            <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+              Operational intelligence analytics, Doppler weather radar telemetry, and official damage assessment.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-1.5 rounded-xl bg-white/5 p-1 border border-white/10">
+          <div className={`flex flex-wrap items-center gap-1.5 rounded-xl p-1 border ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-100 border-slate-200'}`}>
             {INTELLIGENCE_TABS.map(t => {
               const Icon = t.icon;
               const isActive = activeTab === t.id;
@@ -86,7 +81,9 @@ export default function GovernmentIntelligencePage() {
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                     isActive
                       ? 'bg-orange-500 text-white shadow-md'
-                      : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                      : isDark
+                      ? 'text-zinc-400 hover:text-white hover:bg-white/5'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white'
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -100,189 +97,130 @@ export default function GovernmentIntelligencePage() {
 
       {/* Main Tab Content */}
       <div className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
-        {/* 1. OPERATIONAL ANALYTICS (§31) */}
+        {/* 1. OPERATIONAL ANALYTICS */}
         {activeTab === 'analytics' && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider block">
+              <div className={`rounded-2xl border p-4 ${cardClass}`}>
+                <span className={`text-[11px] font-medium uppercase tracking-wider block ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
                   SOS Queue Total
                 </span>
-                <span className="text-2xl font-bold text-white mt-1 block font-mono">
+                <span className={`text-2xl font-bold mt-1 block font-mono ${isDark ? 'text-white' : 'text-slate-900'}`}>
                   {stats.totalReports}
                 </span>
-                <span className="text-[10px] text-zinc-500 mt-0.5 block">
+                <span className={`text-[10px] mt-0.5 block ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
                   {stats.pending} pending officer triage
                 </span>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <span className="text-[11px] font-medium text-emerald-400 uppercase tracking-wider block">
+              <div className={`rounded-2xl border p-4 ${cardClass}`}>
+                <span className="text-[11px] font-medium text-emerald-500 uppercase tracking-wider block">
                   Authorized Deployments
                 </span>
-                <span className="text-2xl font-bold text-emerald-400 mt-1 block font-mono">
+                <span className="text-2xl font-bold text-emerald-500 mt-1 block font-mono">
                   {stats.authorized}
                 </span>
-                <span className="text-[10px] text-zinc-500 mt-0.5 block">
+                <span className={`text-[10px] mt-0.5 block ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
                   Escalated to rescue teams
                 </span>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <span className="text-[11px] font-medium text-amber-400 uppercase tracking-wider block">
+              <div className={`rounded-2xl border p-4 ${cardClass}`}>
+                <span className="text-[11px] font-medium text-amber-500 uppercase tracking-wider block">
                   Active Field Ops
                 </span>
-                <span className="text-2xl font-bold text-amber-400 mt-1 block font-mono">
+                <span className="text-2xl font-bold text-amber-500 mt-1 block font-mono">
                   {stats.inProgressOps}
                 </span>
-                <span className="text-[10px] text-zinc-500 mt-0.5 block">
+                <span className={`text-[10px] mt-0.5 block ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
                   Ongoing search and relief
                 </span>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <span className="text-[11px] font-medium text-blue-400 uppercase tracking-wider block">
+              <div className={`rounded-2xl border p-4 ${cardClass}`}>
+                <span className="text-[11px] font-medium text-blue-500 uppercase tracking-wider block">
                   Completed Missions
                 </span>
-                <span className="text-2xl font-bold text-blue-400 mt-1 block font-mono">
+                <span className="text-2xl font-bold text-blue-500 mt-1 block font-mono">
                   {stats.completedOps}
                 </span>
-                <span className="text-[10px] text-zinc-500 mt-0.5 block">
+                <span className={`text-[10px] mt-0.5 block ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
                   Verified mission closure
                 </span>
               </div>
             </div>
 
             {/* Anti-Hallucination Analytics Notice */}
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-xs text-zinc-400">
-              <strong className="text-zinc-200">Data Integrity Principle (§31):</strong> Analytics reflect exact verified records currently stored in the operational database. ResQVision does not manufacture speculative trend graphs or simulated historical curves when historical archives are not connected.
+            <div className={`rounded-xl border p-4 text-xs ${cardClass}`}>
+              <strong className={isDark ? 'text-zinc-200' : 'text-slate-900'}>Data Integrity Principle:</strong> Analytics reflect exact verified records currently stored in the operational database. ResQVision does not manufacture speculative trend graphs or simulated historical curves when historical archives are not connected.
             </div>
           </div>
         )}
 
-        {/* 2. MULTIWAVE & AFTERSHOCK INTELLIGENCE (§31) */}
-        {activeTab === 'multiwave' && (
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Waves className="h-5 w-5 text-orange-400" />
-                <h3 className="text-sm font-bold text-white">Event Progression & Seismic Waves</h3>
-              </div>
-              <p className="text-xs text-zinc-400 mb-6">
-                Underlying seismic aftershock clusters and cyclone eye tracks recorded from seismological telemetry.
-              </p>
-
-              {activeEvents.length === 0 ? (
-                <div className="text-center py-8 text-xs text-zinc-500">
-                  No active multiwave disaster events currently recorded in telemetry.
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {activeEvents.map(evt => (
-                    <div key={evt.event_id} className="rounded-xl border border-white/10 bg-black/30 p-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-orange-400 font-mono">{evt.event_id}</span>
-                        <span className="text-[11px] uppercase font-mono px-2 py-0.5 rounded bg-white/10 text-zinc-300">
-                          {evt.hazard_type}
-                        </span>
-                      </div>
-                      <h4 className="text-sm font-bold text-white mt-1">{evt.location_name}</h4>
-                      <p className="text-xs text-zinc-400 mt-1">
-                        Affected Population Exposure: <span className="text-white font-mono">{evt.affected_population != null ? evt.affected_population.toLocaleString() : '—'}</span>
-                      </p>
-                      <div className="mt-3 text-[11px] text-zinc-500 border-t border-white/5 pt-2">
-                        {evt.hazard_type === 'earthquake'
-                          ? 'Secondary aftershocks are monitored via USGS / NCS seismic networks. No fabricated secondary waves.'
-                          : evt.hazard_type === 'cyclone'
-                          ? 'Observed eye track progression tracked from IMD radar bulletins.'
-                          : 'Corridor river surge modeled from Central Water Commission hydrologic gauges.'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* 3. AERIAL DRONE TELEMETRY (§31) */}
-        {activeTab === 'drone' && (
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center space-y-3">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-zinc-800 text-zinc-400">
-                <Plane className="h-7 w-7" />
-              </div>
-              <h3 className="text-base font-bold text-white">Drone Feed Not Connected</h3>
-              <p className="text-xs text-zinc-400 max-w-md mx-auto leading-relaxed">
-                As strictly required by the ResQVision anti-hallucination specification (§31), unauthorized or simulated “LIVE” drone video streams are prohibited. Real aerial feeds require encrypted RTSP hardware integration.
-              </p>
-              <div className="inline-flex items-center gap-2 rounded-xl bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 text-xs text-amber-300 font-mono">
-                Status: Drone feed not connected
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 4. DOPPLER RADAR / WEATHER (§31) */}
+        {/* 2. DOPPLER RADAR / WEATHER */}
         {activeTab === 'radar' && (
           <div className="space-y-4">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
+            <div className={`rounded-2xl border p-6 space-y-4 ${cardClass}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Radar className="h-5 w-5 text-orange-400" />
-                  <h3 className="text-sm font-bold text-white">Precipitation Doppler Radar Overlay</h3>
+                  <Radar className="h-5 w-5 text-orange-500" />
+                  <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Precipitation Doppler Radar Overlay
+                  </h3>
                 </div>
-                <span className="rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-0.5 text-xs font-bold uppercase tracking-wider">
+                <span className="rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30 px-3 py-0.5 text-xs font-bold uppercase tracking-wider">
                   Simulation
                 </span>
               </div>
-              <p className="text-xs text-zinc-400">
-                Weather radar reflectivity frames indicating millimeter/hour precipitation polygons. In development mode, frames are marked as <strong>Simulation</strong> as required by §31.
+              <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                Weather radar reflectivity frames indicating millimeter/hour precipitation polygons. In development mode, frames are marked as <strong>Simulation</strong>.
               </p>
 
-              <div className="rounded-xl border border-white/10 bg-black/40 p-6 text-center space-y-2">
-                <div className="text-xs text-zinc-400">
+              <div className={`rounded-xl border p-6 text-center space-y-2 ${isDark ? 'border-white/10 bg-black/40' : 'border-slate-200 bg-slate-100'}`}>
+                <div className={`text-xs ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
                   Interactive radar frame sequence available directly on the{' '}
-                  <span className="text-orange-400 font-semibold">Government Live Map</span> and{' '}
-                  <span className="text-orange-400 font-semibold">Citizen Disaster Map</span> with multi-hazard timeline scrubber.
+                  <span className="text-orange-500 font-semibold">Government Live Map</span> and{' '}
+                  <span className="text-orange-500 font-semibold">Citizen Disaster Map</span> with multi-hazard timeline scrubber.
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* 5. DAMAGE ASSESSMENT (§32) */}
+        {/* 3. DAMAGE ASSESSMENT */}
         {activeTab === 'damage' && (
           <div className="space-y-4">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
+            <div className={`rounded-2xl border p-6 space-y-4 ${cardClass}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <AlertOctagon className="h-5 w-5 text-red-400" />
-                  <h3 className="text-sm font-bold text-white">Stream 2/3 Damage Classification Zones</h3>
+                  <AlertOctagon className="h-5 w-5 text-red-500" />
+                  <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                    Damage Classification Zones
+                  </h3>
                 </div>
-                <span className="text-xs font-mono text-zinc-400">
-                  Backend Contract: Stream 2 ML Ingestion
+                <span className={`text-xs font-mono ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
+                  Stream 2 ML Ingestion
                 </span>
               </div>
-              <p className="text-xs text-zinc-400">
+              <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
                 Damage scores, critical zones, and destroyed footprints visualized directly from official ML assessment payloads.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-xl border border-red-500/30 bg-red-950/20 p-4">
-                  <span className="text-xs font-bold text-red-400 uppercase tracking-wider">
+                <div className={`rounded-xl border p-4 ${isDark ? 'border-red-500/30 bg-red-950/20' : 'border-red-200 bg-red-50'}`}>
+                  <span className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">
                     Destroyed Areas (Red Marker Layer)
                   </span>
-                  <p className="text-xs text-zinc-300 mt-2 leading-relaxed">
+                  <p className={`text-xs mt-2 leading-relaxed ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>
                     Structures and sectors with complete collapse or total inundation. High priority triage zone.
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-4">
-                  <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+                <div className={`rounded-xl border p-4 ${isDark ? 'border-amber-500/30 bg-amber-950/20' : 'border-amber-200 bg-amber-50'}`}>
+                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
                     Major Damage Areas (Amber Marker Layer)
                   </span>
-                  <p className="text-xs text-zinc-300 mt-2 leading-relaxed">
+                  <p className={`text-xs mt-2 leading-relaxed ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>
                     Compromised civil infrastructure, passable with specialized rescue apparatus only.
                   </p>
                 </div>

@@ -7,14 +7,80 @@
 
 export const INDIA_LOCATION_INDEX = [
   { id: 'loc-hyd', city: 'Hyderabad', district: 'Hyderabad', state: 'Telangana', pinCodes: ['500020', '500001', '500081'], lat: 17.415, lng: 78.4867, zoom: 11.5 },
-  { id: 'loc-viz', city: 'Visakhapatnam', district: 'Visakhapatnam', state: 'Andhra Pradesh', pinCodes: ['530001', '530016', '531163'], lat: 17.738, lng: 83.318, zoom: 9 },
-  { id: 'loc-mum', city: 'Mumbai', district: 'Mumbai Suburban', state: 'Maharashtra', pinCodes: ['400070', '400022', '400051'], lat: 19.068, lng: 72.878, zoom: 10.5 },
-  { id: 'loc-del', city: 'New Delhi / Rohtak', district: 'NCR Seismic Sector', state: 'Delhi / Haryana', pinCodes: ['110001', '124001'], lat: 28.88, lng: 76.62, zoom: 8.8 },
-  { id: 'loc-and', city: 'Port Blair / Andaman Sea', district: 'South Andaman', state: 'Andaman & Nicobar', pinCodes: ['744101'], lat: 11.623, lng: 92.726, zoom: 6.2 },
+  { id: 'loc-mum', city: 'Mumbai', district: 'Mumbai Suburban', state: 'Maharashtra', pinCodes: ['400070', '400022', '400051'], lat: 19.0760, lng: 72.8777, zoom: 11.0 },
+  { id: 'loc-blr', city: 'Bengaluru', district: 'Bengaluru Urban', state: 'Karnataka', pinCodes: ['560001', '560034', '560100'], lat: 12.9716, lng: 77.5946, zoom: 11.5 },
+  { id: 'loc-del', city: 'New Delhi / Delhi', district: 'New Delhi', state: 'Delhi', pinCodes: ['110001', '110006', '110020'], lat: 28.6139, lng: 77.2090, zoom: 11.0 },
+  { id: 'loc-che', city: 'Chennai', district: 'Chennai', state: 'Tamil Nadu', pinCodes: ['600015', '600001', '600028'], lat: 13.0827, lng: 80.2707, zoom: 11.0 },
+  { id: 'loc-kol', city: 'Kolkata', district: 'Kolkata', state: 'West Bengal', pinCodes: ['700001', '700020', '700091'], lat: 22.5726, lng: 88.3639, zoom: 11.0 },
+  { id: 'loc-pun', city: 'Pune', district: 'Pune', state: 'Maharashtra', pinCodes: ['411001', '411014', '411057'], lat: 18.5204, lng: 73.8567, zoom: 11.5 },
+  { id: 'loc-ahd', city: 'Ahmedabad', district: 'Ahmedabad', state: 'Gujarat', pinCodes: ['380001', '380015', '380054'], lat: 23.0225, lng: 72.5714, zoom: 11.5 },
+  { id: 'loc-jai', city: 'Jaipur', district: 'Jaipur', state: 'Rajasthan', pinCodes: ['302001', '302017', '302020'], lat: 26.9124, lng: 75.7873, zoom: 11.5 },
+  { id: 'loc-luc', city: 'Lucknow', district: 'Lucknow', state: 'Uttar Pradesh', pinCodes: ['226001', '226010', '226016'], lat: 26.8467, lng: 80.9462, zoom: 11.5 },
+  { id: 'loc-knp', city: 'Kanpur', district: 'Kanpur Nagar', state: 'Uttar Pradesh', pinCodes: ['208001', '208012'], lat: 26.4499, lng: 80.3319, zoom: 11.5 },
+  { id: 'loc-nag', city: 'Nagpur', district: 'Nagpur', state: 'Maharashtra', pinCodes: ['440001', '440010'], lat: 21.1458, lng: 79.0882, zoom: 11.5 },
+  { id: 'loc-ind', city: 'Indore', district: 'Indore', state: 'Madhya Pradesh', pinCodes: ['452001', '452010'], lat: 22.7196, lng: 75.8577, zoom: 11.5 },
+  { id: 'loc-bho', city: 'Bhopal', district: 'Bhopal', state: 'Madhya Pradesh', pinCodes: ['462001', '462016'], lat: 23.2599, lng: 77.4126, zoom: 11.5 },
+  { id: 'loc-pat', city: 'Patna', district: 'Patna', state: 'Bihar', pinCodes: ['800001', '800020'], lat: 25.5941, lng: 85.1376, zoom: 11.5 },
+  { id: 'loc-viz', city: 'Visakhapatnam', district: 'Visakhapatnam', state: 'Andhra Pradesh', pinCodes: ['530001', '530016', '531163'], lat: 17.738, lng: 83.318, zoom: 11.0 },
   { id: 'loc-vjw', city: 'Vijayawada', district: 'NTR District', state: 'Andhra Pradesh', pinCodes: ['520001', '520010'], lat: 16.519, lng: 80.628, zoom: 11.5 },
-  { id: 'loc-che', city: 'Chennai', district: 'Chennai', state: 'Tamil Nadu', pinCodes: ['600015', '600001'], lat: 13.042, lng: 80.238, zoom: 10.5 },
-  { id: 'loc-gwt', city: 'Guwahati', district: 'Kamrup Metro', state: 'Assam', pinCodes: ['781001', '781010'], lat: 26.178, lng: 91.748, zoom: 11 }
+  { id: 'loc-vad', city: 'Vadodara', district: 'Vadodara', state: 'Gujarat', pinCodes: ['390001', '390007'], lat: 22.3072, lng: 73.1812, zoom: 11.5 },
+  { id: 'loc-sur', city: 'Surat', district: 'Surat', state: 'Gujarat', pinCodes: ['395001', '395007'], lat: 21.1702, lng: 72.8311, zoom: 11.5 },
+  { id: 'loc-koc', city: 'Kochi', district: 'Ernakulam', state: 'Kerala', pinCodes: ['682001', '682016'], lat: 9.9312, lng: 76.2673, zoom: 11.5 },
+  { id: 'loc-tvm', city: 'Thiruvananthapuram', district: 'Thiruvananthapuram', state: 'Kerala', pinCodes: ['695001', '695014'], lat: 8.5241, lng: 76.9366, zoom: 11.5 },
+  { id: 'loc-cbe', city: 'Coimbatore', district: 'Coimbatore', state: 'Tamil Nadu', pinCodes: ['641001', '641018'], lat: 11.0168, lng: 76.9558, zoom: 11.5 },
+  { id: 'loc-bhu', city: 'Bhubaneswar', district: 'Khordha', state: 'Odisha', pinCodes: ['751001', '751024'], lat: 20.2961, lng: 85.8245, zoom: 11.5 },
+  { id: 'loc-chd', city: 'Chandigarh', district: 'Chandigarh', state: 'Chandigarh', pinCodes: ['160017', '160022'], lat: 30.7333, lng: 76.7794, zoom: 11.5 },
+  { id: 'loc-ded', city: 'Dehradun', district: 'Dehradun', state: 'Uttarakhand', pinCodes: ['248001', '248006'], lat: 30.3165, lng: 78.0322, zoom: 11.5 },
+  { id: 'loc-sri', city: 'Srinagar', district: 'Srinagar', state: 'Jammu & Kashmir', pinCodes: ['190001', '190008'], lat: 34.0837, lng: 74.7973, zoom: 11.5 },
+  { id: 'loc-rnc', city: 'Ranchi', district: 'Ranchi', state: 'Jharkhand', pinCodes: ['834001', '834002'], lat: 23.3441, lng: 85.3096, zoom: 11.5 },
+  { id: 'loc-rpr', city: 'Raipur', district: 'Raipur', state: 'Chhattisgarh', pinCodes: ['492001', '492006'], lat: 21.2514, lng: 81.6296, zoom: 11.5 },
+  { id: 'loc-goa', city: 'Goa / Panaji', district: 'North Goa', state: 'Goa', pinCodes: ['403001'], lat: 15.4909, lng: 73.8278, zoom: 11.5 },
+  { id: 'loc-war', city: 'Warangal', district: 'Warangal', state: 'Telangana', pinCodes: ['506001', '506002'], lat: 17.9689, lng: 79.5941, zoom: 11.5 },
+  { id: 'loc-gun', city: 'Guntur', district: 'Guntur', state: 'Andhra Pradesh', pinCodes: ['522001', '522002'], lat: 16.3067, lng: 80.4365, zoom: 11.5 },
+  { id: 'loc-agr', city: 'Agra', district: 'Agra', state: 'Uttar Pradesh', pinCodes: ['282001', '282002'], lat: 27.1767, lng: 78.0081, zoom: 11.5 },
+  { id: 'loc-var', city: 'Varanasi', district: 'Varanasi', state: 'Uttar Pradesh', pinCodes: ['221001', '221002'], lat: 25.3176, lng: 82.9739, zoom: 11.5 },
+  { id: 'loc-amr', city: 'Amritsar', district: 'Amritsar', state: 'Punjab', pinCodes: ['143001', '143006'], lat: 31.6340, lng: 74.8723, zoom: 11.5 },
+  { id: 'loc-jod', city: 'Jodhpur', district: 'Jodhpur', state: 'Rajasthan', pinCodes: ['342001', '342003'], lat: 26.2389, lng: 73.0243, zoom: 11.5 },
+  { id: 'loc-mad', city: 'Madurai', district: 'Madurai', state: 'Tamil Nadu', pinCodes: ['625001', '625020'], lat: 9.9252, lng: 78.1198, zoom: 11.5 },
+  { id: 'loc-mys', city: 'Mysuru', district: 'Mysuru', state: 'Karnataka', pinCodes: ['570001', '570020'], lat: 12.2958, lng: 76.6394, zoom: 11.5 },
+  { id: 'loc-mng', city: 'Mangaluru', district: 'Dakshina Kannada', state: 'Karnataka', pinCodes: ['575001', '575003'], lat: 12.9141, lng: 74.8560, zoom: 11.5 },
+  { id: 'loc-cal', city: 'Kozhikode', district: 'Kozhikode', state: 'Kerala', pinCodes: ['673001', '673004'], lat: 11.2588, lng: 75.7804, zoom: 11.5 },
+  { id: 'loc-noi', city: 'Noida', district: 'Gautam Buddha Nagar', state: 'Uttar Pradesh', pinCodes: ['201301', '201307'], lat: 28.5355, lng: 77.3910, zoom: 11.5 },
+  { id: 'loc-gur', city: 'Gurugram', district: 'Gurugram', state: 'Haryana', pinCodes: ['122001', '122018'], lat: 28.4595, lng: 77.0266, zoom: 11.5 },
+  { id: 'loc-gwt', city: 'Guwahati', district: 'Kamrup Metro', state: 'Assam', pinCodes: ['781001', '781010'], lat: 26.178, lng: 91.748, zoom: 11 },
+  { id: 'loc-and', city: 'Port Blair / Andaman Sea', district: 'South Andaman', state: 'Andaman & Nicobar', pinCodes: ['744101'], lat: 11.623, lng: 92.726, zoom: 6.2 }
 ];
+
+export function findIndianLocation(query) {
+  if (!query || typeof query !== 'string') return null;
+  const q = query.trim().toLowerCase();
+  if (q.length < 2) return null;
+
+  // Direct exact match
+  for (const item of INDIA_LOCATION_INDEX) {
+    if (item.city.toLowerCase() === q || item.district.toLowerCase() === q) {
+      return item;
+    }
+  }
+  // Substring match in city or district
+  for (const item of INDIA_LOCATION_INDEX) {
+    if (
+      item.city.toLowerCase().includes(q) ||
+      q.includes(item.city.toLowerCase().split('/')[0].trim()) ||
+      item.district.toLowerCase().includes(q)
+    ) {
+      return item;
+    }
+  }
+  // Substring match in state
+  for (const item of INDIA_LOCATION_INDEX) {
+    if (item.state.toLowerCase().includes(q) || q.includes(item.state.toLowerCase())) {
+      return item;
+    }
+  }
+  return null;
+}
+
 
 export const DEMO_ACTIVE_DISASTERS = [
   {

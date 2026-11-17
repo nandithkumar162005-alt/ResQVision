@@ -196,59 +196,6 @@ export default function CitizenMapPage() {
         </div>
       )}
 
-      {/* Map Category Filter Strip — Dark/Light Responsive */}
-      <div className={`rounded-2xl p-3.5 border transition-colors ${cardClass}`}>
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <span className={`inline-flex items-center gap-1.5 font-bold ${isDark ? 'text-zinc-200' : 'text-zinc-700'}`}>
-            <Layers className="h-3.5 w-3.5 text-orange-500" />
-            Map Categories
-          </span>
-          <span className={`inline-flex items-center gap-1.5 text-[11px] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-            <Route className="h-3.5 w-3.5 text-emerald-500" />
-            Verified evacuation routes:{' '}
-            <strong className={isDark ? 'text-emerald-400' : 'text-emerald-700'}>
-              {verifiedRoutes.length === 0
-                ? '0 (shown only from authoritative source)'
-                : verifiedRoutes.length}
-            </strong>
-          </span>
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {CITIZEN_LAYER_CONTROLS.map(ctrl => {
-            const active = layers[ctrl.key];
-            return (
-              <button
-                key={ctrl.key}
-                type="button"
-                aria-pressed={active}
-                onClick={() => toggleLayer(ctrl.key)}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium transition cursor-pointer ${
-                  active
-                    ? isDark
-                      ? 'border-orange-500 bg-orange-600 text-white font-bold shadow-sm'
-                      : 'border-zinc-900 bg-zinc-900 text-white'
-                    : isDark
-                    ? 'border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10'
-                    : 'border-zinc-200 bg-white/70 text-zinc-600 hover:bg-white'
-                }`}
-              >
-                <span className={`h-2 w-2 rounded-full ${ctrl.dot}`} />
-                {ctrl.label}
-              </button>
-            );
-          })}
-        </div>
-        {useMockData ? (
-          <p className={`mt-2 text-[11px] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-            Active national geospatial feed: displaying verified emergency assets, relief centers, and evacuation corridors across India.
-          </p>
-        ) : (
-          geoRes?.unavailableReason && (
-            <p className={`mt-2 text-[11px] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{geoRes.unavailableReason}</p>
-          )
-        )}
-      </div>
-
       {/* Main Map Area — Strictly theme-responsive */}
       {disasterLoading ? (
         <LoadingSkeleton theme={isDark ? 'dark' : 'light'} variant="map" />
