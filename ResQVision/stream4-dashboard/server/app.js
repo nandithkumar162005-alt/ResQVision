@@ -100,7 +100,10 @@ function sanitizeGovernmentReportView(report) {
       id: p.id,
       name: p.name,
       caption: p.caption,
-      url: `/api/v1/attachments/${p.id}`
+      mimeType: p.mimeType,
+      sizeBytes: p.sizeBytes,
+      url: `/api/v1/attachments/${p.id}`,
+      downloadUrl: `/api/v1/attachments/${p.id}?download=1`
     }))
   };
 }
@@ -606,7 +609,10 @@ export function createApp({
       const dateTag = now.slice(0, 10).replaceAll('-', '');
       const reference = `SOS-RV-${dateTag}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
 
-      // 1. AI Image Authenticity Verification via Stream 2
+      // =========================================================================
+      // Pre-Rescue Verification Pipeline: Image & Text Verification via Stream 2
+      // Ensures citizen reports pass through verification BEFORE entering the portal
+      // =========================================================================
       let imageAssessment = {
         available: false,
         cautionLabel: storedAttachments.length > 0 ? 'AI Verification Pending' : 'No photographs attached',
@@ -616,42 +622,6 @@ export function createApp({
         confidenceCaveat: 'Automated assessment is an advisory tool; officer ground verification is required.'
       };
 
-      if (validatedFiles.length > 0 && CONFIG.imageAssessmentUrl) {
-        try {
-          const form = new FormData();
-          const firstItem = validatedFiles[0];
-          form.append('file', new Blob([firstItem.buffer], { type: firstItem.mime }), firstItem.originalName);
-          if (Number.isFinite(lat)) form.append('lat', String(lat));
-          if (Number.isFinite(lng)) form.append('lng', String(lng));
-          if (emergencyType) form.append('claimed_type', emergencyType);
-          form.append('taken_at', now.slice(0, 10));
-
-          const imgResp = await fetch(CONFIG.imageAssessmentUrl, {
-            method: 'POST',
-            body: form,
-            signal: AbortSignal.timeout(3000)
-          });
-          if (imgResp.ok) {
-            const imgData = await imgResp.json();
-            const auth = imgData?.data || {};
-            imageAssessment = {
-              available: true,
-              verdict: auth.verdict,
-              label: auth.label,
-              ai_probability: auth.ai_probability,
-              confidence: auth.confidence,
-              cautionLabel: `AI Image: ${auth.label || auth.verdict} (${auth.ai_probability}% AI Probability)`,
-              summary: (auth.reasons || []).join('; ') || auth.summary?.headline || 'Image evaluated by ML forensics.',
-              confidenceCaveat: auth.disclaimer || 'Use alongside NDRF ground confirmation before dispatch.',
-              reasons: auth.reasons || []
-            };
-          }
-        } catch {
-          // Graceful fallback if Stream 2 is offline
-        }
-      }
-
-      // 2. AI Distress Message Veracity Verification via Stream 2
       let messageVerification = {
         available: false,
         verdict: 'UNVERIFIED',
@@ -662,33 +632,125 @@ export function createApp({
         reasons: []
       };
 
-      try {
-        const msgVerifyUrl = CONFIG.imageAssessmentUrl.replace('/verify-image', '/verify-message');
-        const msgResp = await fetch(msgVerifyUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: description,
-            emergency_type: emergencyType,
-            lat: Number.isFinite(lat) ? lat : null,
-            lng: Number.isFinite(lng) ? lng : null,
-            location_text: locationText,
-            people_count: peopleCount
-          }),
-          signal: AbortSignal.timeout(3000)
-        });
-        if (msgResp.ok) {
-          const msgData = await msgResp.json();
-          if (msgData?.data) {
-            messageVerification = {
-              available: true,
-              ...msgData.data
-            };
-          }
-        }
-      } catch {
-        // Graceful fallback if Stream 2 is offline
+      const verifyTasks = [];
+
+      // A. Parallel Image Verification Task
+      if (validatedFiles.length > 0 && CONFIG.imageAssessmentUrl) {
+        verifyTasks.push(
+          (async () => {
+            const firstItem = validatedFiles[0];
+            const isLocal = CONFIG.imageAssessmentUrl.includes('127.0.0.1') || CONFIG.imageAssessmentUrl.includes('localhost');
+            const maxTries = isLocal ? 1 : 2;
+            for (let a = 0; a < maxTries; a++) {
+              try {
+                const form = new FormData();
+                form.append('file', new Blob([firstItem.buffer], { type: firstItem.mime }), firstItem.originalName);
+                if (Number.isFinite(lat)) form.append('lat', String(lat));
+                if (Number.isFinite(lng)) form.append('lng', String(lng));
+                if (emergencyType) form.append('claimed_type', emergencyType);
+                form.append('taken_at', now.slice(0, 10));
+
+                const imgResp = await fetch(CONFIG.imageAssessmentUrl, {
+                  method: 'POST',
+                  body: form,
+                  signal: AbortSignal.timeout(15_000)
+                });
+                if (imgResp.ok) {
+                  const imgData = await imgResp.json();
+                  const auth = imgData?.data || {};
+                  imageAssessment = {
+                    available: true,
+                    verdict: auth.verdict,
+                    label: auth.label,
+                    ai_probability: auth.ai_probability,
+                    confidence: auth.confidence,
+                    cautionLabel: `AI Image: ${auth.label || auth.verdict} (${auth.ai_probability}% AI Probability)`,
+                    summary: (auth.reasons || []).join('; ') || auth.summary?.headline || 'Image evaluated by ML forensics.',
+                    confidenceCaveat: auth.disclaimer || 'Use alongside NDRF ground confirmation before dispatch.',
+                    reasons: auth.reasons || [],
+                    signals: auth.signals || [],
+                    context: auth.context || null,
+                    verifiedAt: new Date().toISOString()
+                  };
+                  break;
+                }
+                if (a < maxTries - 1 && (imgResp.status === 502 || imgResp.status === 504 || imgResp.status === 503)) {
+                  await new Promise(r => setTimeout(r, 1500));
+                }
+              } catch {
+                if (a < maxTries - 1) {
+                  await new Promise(r => setTimeout(r, 1500));
+                }
+              }
+            }
+          })()
+        );
       }
+
+      // B. Parallel Text / Distress Message Veracity Task
+      if (CONFIG.imageAssessmentUrl) {
+        verifyTasks.push(
+          (async () => {
+            const msgVerifyUrl = CONFIG.imageAssessmentUrl.replace('/verify-image', '/verify-message');
+            const isLocal = msgVerifyUrl.includes('127.0.0.1') || msgVerifyUrl.includes('localhost');
+            const maxTries = isLocal ? 1 : 2;
+            for (let a = 0; a < maxTries; a++) {
+              try {
+                const msgResp = await fetch(msgVerifyUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    text: description,
+                    emergency_type: emergencyType,
+                    lat: Number.isFinite(lat) ? lat : null,
+                    lng: Number.isFinite(lng) ? lng : null,
+                    location_text: locationText,
+                    people_count: peopleCount
+                  }),
+                  signal: AbortSignal.timeout(15_000)
+                });
+                if (msgResp.ok) {
+                  const msgData = await msgResp.json();
+                  if (msgData?.data) {
+                    messageVerification = {
+                      available: true,
+                      ...msgData.data,
+                      verifiedAt: new Date().toISOString()
+                    };
+                  }
+                  break;
+                }
+                if (a < maxTries - 1 && (msgResp.status === 502 || msgResp.status === 504 || msgResp.status === 503)) {
+                  await new Promise(r => setTimeout(r, 1500));
+                }
+              } catch {
+                if (a < maxTries - 1) {
+                  await new Promise(r => setTimeout(r, 1500));
+                }
+              }
+            }
+          })()
+        );
+      }
+
+      // Execute both verification pipelines before saving to database and publishing to rescue portal
+      if (verifyTasks.length > 0) {
+        await Promise.allSettled(verifyTasks);
+      }
+
+      const verificationPipeline = {
+        passed: (imageAssessment.available || validatedFiles.length === 0) && messageVerification.available,
+        status: 'COMPLETED',
+        overallRisk:
+          imageAssessment.verdict === 'AI_GENERATED' || messageVerification.verdict === 'PROBABLE_HOAX'
+            ? 'HIGH_RISK_SUSPECT'
+            : imageAssessment.verdict === 'LIKELY_REAL' && (messageVerification.is_genuine || messageVerification.authenticity_score >= 80)
+            ? 'VERIFIED_AUTHENTIC'
+            : 'ADVISORY_CAUTION',
+        imageVerified: imageAssessment.available,
+        textVerified: messageVerification.available,
+        processedAt: new Date().toISOString()
+      };
 
       const result = await store.mutate(db => {
         const tenMinAgo = Date.now() - 10 * 60 * 1000;
@@ -725,22 +787,27 @@ export function createApp({
           photos: storedAttachments.map(a => ({
             id: a.id,
             name: a.name,
-            caption: a.caption
+            caption: a.caption,
+            mimeType: a.mimeType,
+            sizeBytes: a.sizeBytes,
+            url: `/api/v1/attachments/${a.id}`,
+            downloadUrl: `/api/v1/attachments/${a.id}?download=1`
           })),
           status: 'pending_review',
           statusLabel: 'Submitted — Pending Officer Review',
           officerNote:
-            'Report stored on server. Pending human review by an authorized officer (not yet verified or dispatched).',
+            'Report stored on server. Pre-intake AI verification completed; awaiting authorized human officer review.',
           reviewedBy: null,
           reviewedAt: null,
           authorizedUnit: null,
           imageAssessment,
           messageVerification,
+          verificationPipeline,
           auditTrail: [
             {
               at: now,
               actor: `${req.user.name} (Citizen)`,
-              action: `Submitted SOS ${reference} (${locationSource}). Stored in backend; awaiting officer review.`
+              action: `Submitted SOS ${reference} (${locationSource}). Pre-intake verification: Image ${imageAssessment.available ? imageAssessment.verdict : 'N/A'} · Message ${messageVerification.available ? messageVerification.verdict : 'Pending'}. Stored in backend; awaiting officer review.`
             }
           ],
           citizenUpdates: [],
@@ -926,6 +993,12 @@ export function createApp({
     res.setHeader('Content-Type', att.mimeType);
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Cache-Control', 'private, max-age=300');
+    if (req.query.download === '1' || req.query.download === 'true') {
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${encodeURIComponent(att.name || 'photo.jpg')}"`
+      );
+    }
     return res.sendFile(fullPath);
   });
 

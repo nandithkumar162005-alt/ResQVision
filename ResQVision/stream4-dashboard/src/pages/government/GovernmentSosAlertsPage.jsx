@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock,
+  Download,
   HelpCircle,
   MapPin,
   ShieldCheck,
@@ -20,6 +21,7 @@ import {
 } from '../../components/shared/UiStates.jsx';
 import { useAppState } from '../../context/AppContext.jsx';
 import { formatDateTime } from '../../utils/format.js';
+import { downloadImageAttachment } from '../../utils/download.js';
 
 const RESPONSE_UNITS = [
   'NDRF Battalion Rapid Response Team',
@@ -276,28 +278,53 @@ export default function GovernmentSosAlertsPage() {
 
               {/* Citizen Photographs */}
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                  Citizen Photographs ({current.photos?.length || 0})
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                    Citizen Photographs ({current.photos?.length || 0})
+                  </h3>
+                  {current.photos?.length > 0 && (
+                    <span className="text-[11px] text-zinc-400">
+                      Click to inspect or download full image
+                    </span>
+                  )}
+                </div>
                 {current.photos?.length ? (
                   <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {current.photos.map((photo, idx) => (
-                      <button
+                      <div
                         key={`${photo.id || photo.name}-${idx}`}
-                        type="button"
-                        onClick={() => setPreviewPhoto(photo)}
-                        className="group overflow-hidden rounded-xl border border-charcoal-700 bg-charcoal-950 text-left"
+                        className="group flex flex-col justify-between overflow-hidden rounded-xl border border-charcoal-700 bg-charcoal-950 text-left transition hover:border-orange-500/50"
                       >
-                        <ProtectedImage
-                          src={photo.url}
-                          token={governmentToken}
-                          alt={photo.caption || photo.name}
-                          className="h-32 w-full object-cover transition group-hover:scale-105"
-                        />
-                        <div className="px-2.5 py-1.5 text-[11px] text-zinc-300">
-                          {photo.caption || photo.name}
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setPreviewPhoto(photo)}
+                          onKeyDown={e => e.key === 'Enter' && setPreviewPhoto(photo)}
+                          className="cursor-pointer overflow-hidden"
+                          title="Click to preview"
+                        >
+                          <ProtectedImage
+                            src={photo.url}
+                            token={governmentToken}
+                            alt={photo.caption || photo.name}
+                            className="h-32 w-full object-cover transition group-hover:scale-105"
+                          />
                         </div>
-                      </button>
+                        <div className="flex items-center justify-between gap-1 p-2 text-[11px] text-zinc-300">
+                          <span className="truncate" title={photo.caption || photo.name}>
+                            {photo.caption || photo.name}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => downloadImageAttachment(photo, governmentToken)}
+                            className="inline-flex items-center gap-1 rounded-md border border-charcoal-700 bg-charcoal-850 px-2 py-1 text-[10px] font-medium text-zinc-200 transition hover:bg-orange-500 hover:text-white cursor-pointer"
+                            title="Download original photo"
+                          >
+                            <Download className="h-3 w-3" />
+                            <span>Download</span>
+                          </button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 ) : (
@@ -309,6 +336,43 @@ export default function GovernmentSosAlertsPage() {
 
               {/* AI Image & Message Authenticity Section */}
               <div className="space-y-3">
+                {/* Pre-Rescue AI Intake Verification Summary Banner */}
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-charcoal-700 bg-charcoal-950/80 p-3 text-xs">
+                  <div className="flex items-center gap-2 font-semibold text-zinc-200">
+                    <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                    <span>Pre-Rescue AI Intake Verification</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {current.photos?.length > 0 && (
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-mono font-bold ${
+                          current.imageAssessment?.verdict === 'AI_GENERATED' || current.imageAssessment?.verdict === 'LIKELY_AI'
+                            ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                            : current.imageAssessment?.available
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                            : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        }`}
+                      >
+                        Image: {current.imageAssessment?.available ? (current.imageAssessment.verdict || 'VERIFIED') : 'Pending'}
+                      </span>
+                    )}
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-mono font-bold ${
+                        current.messageVerification?.verdict === 'PROBABLE_HOAX' || current.messageVerification?.verdict === 'AI_GENERATED'
+                          ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                          : current.messageVerification?.available
+                          ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                          : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                      }`}
+                    >
+                      Text: {current.messageVerification?.available ? (current.messageVerification.verdict || 'VERIFIED') : 'Pending'}
+                    </span>
+                    <span className="text-[10px] text-zinc-400">
+                      Verified prior to rescue queue display
+                    </span>
+                  </div>
+                </div>
+
                 {/* 1. AI Image Authenticity Card */}
                 {(() => {
                   const img = current.imageAssessment;
@@ -595,12 +659,34 @@ export default function GovernmentSosAlertsPage() {
         title={previewPhoto?.caption || previewPhoto?.name || 'Photograph'}
       >
         {previewPhoto && (
-          <ProtectedImage
-            src={previewPhoto.url}
-            token={governmentToken}
-            alt={previewPhoto.caption || previewPhoto.name}
-            className="max-h-[65vh] w-full rounded-xl object-contain"
-          />
+          <div className="space-y-4">
+            <ProtectedImage
+              src={previewPhoto.url}
+              token={governmentToken}
+              alt={previewPhoto.caption || previewPhoto.name}
+              className="max-h-[60vh] w-full rounded-xl object-contain bg-black/40"
+            />
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-charcoal-800 pt-3">
+              <div className="text-xs text-zinc-400">
+                <span className="font-semibold text-zinc-200">
+                  {previewPhoto.caption || previewPhoto.name}
+                </span>
+                {previewPhoto.sizeBytes && (
+                  <span className="ml-2 font-mono text-[11px] text-zinc-500">
+                    ({Math.max(1, Math.round(previewPhoto.sizeBytes / 1024))} KB)
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => downloadImageAttachment(previewPhoto, governmentToken)}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-orange-500 px-3.5 py-2 text-xs font-bold text-white transition hover:bg-orange-600 cursor-pointer shadow-sm"
+              >
+                <Download className="h-4 w-4" />
+                Download Original Image
+              </button>
+            </div>
+          </div>
         )}
       </ModalDialog>
     </div>

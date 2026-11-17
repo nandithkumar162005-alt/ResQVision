@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   ClipboardCheck,
   Clock,
+  Download,
   Edit3,
   FileWarning,
   XCircle
@@ -17,6 +18,7 @@ import {
 } from '../../components/shared/UiStates.jsx';
 import { useAppState } from '../../context/AppContext.jsx';
 import { formatDateTime, formatNumber } from '../../utils/format.js';
+import { downloadImageAttachment } from '../../utils/download.js';
 
 const OP_STATUS_BADGE = {
   successful: 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300',
@@ -380,7 +382,7 @@ export default function GovernmentRescueHistoryPage() {
                 {evidenceTarget.evidence.map(ev => (
                   <figure
                     key={ev.id}
-                    className="overflow-hidden rounded-xl border border-charcoal-700 bg-charcoal-950"
+                    className="flex flex-col justify-between overflow-hidden rounded-xl border border-charcoal-700 bg-charcoal-950"
                   >
                     <ProtectedImage
                       src={ev.url}
@@ -388,8 +390,19 @@ export default function GovernmentRescueHistoryPage() {
                       alt={ev.caption}
                       className="h-44 w-full object-cover"
                     />
-                    <figcaption className="space-y-1 p-3">
-                      <p className="font-semibold text-zinc-100">{ev.caption}</p>
+                    <figcaption className="space-y-1.5 p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-semibold text-zinc-100">{ev.caption}</p>
+                        <button
+                          type="button"
+                          onClick={() => downloadImageAttachment({ url: ev.url, name: `${(ev.caption || 'evidence').replace(/[^a-zA-Z0-9_-]/g, '_')}.jpg` }, governmentToken)}
+                          className="inline-flex items-center gap-1 rounded-md border border-charcoal-700 bg-charcoal-850 px-2 py-1 text-[10px] font-medium text-zinc-200 transition hover:bg-orange-500 hover:text-white cursor-pointer"
+                          title="Download photo"
+                        >
+                          <Download className="h-3 w-3" />
+                          <span>Download</span>
+                        </button>
+                      </div>
                       <p className="text-[11px] text-zinc-400">
                         {ev.uploaded_by} · {formatDateTime(ev.captured_at)}
                       </p>

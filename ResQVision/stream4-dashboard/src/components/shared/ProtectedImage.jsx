@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { resolveUrl } from '../../services/api.js';
 
 /**
  * Renders images seamlessly for public/blob URLs AND RBAC-protected /api/v1/attachments/* endpoints.
@@ -19,8 +20,9 @@ export default function ProtectedImage({ src, alt, token, className = '' }) {
 
     let cancelled = false;
     let objectUrl = '';
+    const targetUrl = resolveUrl(src);
 
-    fetch(src, {
+    fetch(targetUrl, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     })
       .then(res => {
