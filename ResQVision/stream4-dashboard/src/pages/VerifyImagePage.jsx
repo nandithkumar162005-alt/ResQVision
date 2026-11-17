@@ -106,7 +106,20 @@ export default function VerifyImagePage() {
             <button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-2.5 text-sm font-bold text-white hover:bg-zinc-800 disabled:opacity-60">
               {busy ? <><Loader2 className="h-4 w-4 animate-spin" /> Analysing…</> : 'Verify image'}
             </button>
-            {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
+            {error && (
+              <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 space-y-2">
+                <p>{error}</p>
+                {error.includes('waking up') && (
+                  <button
+                    type="button"
+                    onClick={run}
+                    className="inline-flex items-center gap-1.5 rounded-md bg-red-800 px-2.5 py-1 text-xs font-semibold text-white hover:bg-red-900 transition"
+                  >
+                    Retry Now
+                  </button>
+                )}
+              </div>
+            )}
           </form>
 
           <section aria-live="polite" className="space-y-4">

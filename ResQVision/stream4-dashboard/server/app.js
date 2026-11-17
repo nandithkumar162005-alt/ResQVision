@@ -194,22 +194,80 @@ export function createApp({
     if (!/^image\//.test(req.file.mimetype)) {
       return res.status(400).json({ error: 'The file must be an image (JPEG, PNG or WebP).' });
     }
-    const form = new FormData();
-    form.append('file', new Blob([req.file.buffer], { type: req.file.mimetype }), req.file.originalname || 'upload');
-    for (const k of ['lat', 'lng', 'taken_at', 'claimed_type']) {
-      const v = String(req.body?.[k] ?? '').trim();
-      if (v) form.append(k, v);
-    }
-    try {
-      const r = await fetch(CONFIG.imageAssessmentUrl, { method: 'POST', body: form, signal: AbortSignal.timeout(45_000) });
-      const body = await r.json().catch(() => ({}));
-      if (!r.ok) {
-        return res.status(r.status === 422 ? 422 : 502).json({ error: body.detail || 'Image analysis failed.' });
+    const makeForm = () => {
+      const f = new FormData();
+      f.append('file', new Blob([req.file.buffer], { type: req.file.mimetype }), req.file.originalname || 'upload');
+      for (const k of ['lat', 'lng', 'taken_at', 'claimed_type']) {
+        const v = String(req.body?.[k] ?? '').trim();
+        if (v) f.append(k, v);
       }
-      return res.json(body);
-    } catch {
-      return res.status(503).json({ error: 'Cannot reach the image analysis service (Stream 2, port 8002). Is it running?' });
+      return f;
+    };
+
+    const isLocal = CONFIG.imageAssessmentUrl.includes('127.0.0.1') || CONFIG.imageAssessmentUrl.includes('localhost');
+    const maxRetries = isLocal ? 0 : 2;
+    let response = null;
+    let body = null;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const r = await fetch(CONFIG.imageAssessmentUrl, {
+          method: 'POST',
+          body: makeForm(),
+          signal: AbortSignal.timeout(attempt === 0 ? 30_000 : 45_000)
+        });
+        const parsed = await r.json().catch(() => null);
+
+        if (r.ok) {
+          return res.json(parsed);
+        }
+
+        // If client validation error (400 or 422), return immediately without retrying
+        if (r.status === 400 || r.status === 422) {
+          let detail = parsed?.detail || parsed?.error;
+          if (Array.isArray(detail)) {
+            detail = detail.map((d) => `${d.loc?.slice(-1)[0] || 'input'}: ${d.msg}`).join(', ');
+          } else if (typeof detail === 'object' && detail !== null) {
+            detail = JSON.stringify(detail);
+          }
+          return res.status(422).json({ error: detail || 'Invalid image or claim data provided.' });
+        }
+
+        response = r;
+        body = parsed;
+
+        // If 502/503/504 (e.g. Render free-tier container spinning up), wait and retry
+        if (attempt < maxRetries && (r.status === 502 || r.status === 503 || r.status === 504)) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        } else {
+          break;
+        }
+      } catch (err) {
+        if (attempt < maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+      }
     }
+
+    if (response) {
+      let detailMsg = body?.detail || body?.error;
+      if (Array.isArray(detailMsg)) {
+        detailMsg = detailMsg.map((d) => `${d.loc?.slice(-1)[0] || 'input'}: ${d.msg}`).join(', ');
+      } else if (typeof detailMsg === 'object' && detailMsg !== null) {
+        detailMsg = JSON.stringify(detailMsg);
+      }
+
+      if (response.status === 502 || response.status === 504 || response.status === 503) {
+        return res.status(502).json({
+          error: detailMsg || 'The AI image analysis service (Stream 2) is waking up from standby on Render. Please wait 10-15 seconds and try again.'
+        });
+      }
+      return res.status(response.status).json({
+        error: detailMsg || 'Image analysis service (Stream 2) returned an error. Please try again.'
+      });
+    }
+
+    return res.status(503).json({ error: 'Cannot reach the image analysis service (Stream 2, port 8002). Is it running?' });
   });
 
   app.post('/api/v1/verify-message', express.json(), async (req, res) => {
@@ -218,28 +276,77 @@ export function createApp({
       return res.status(400).json({ error: 'Text message is required for verification.' });
     }
     const messageVerifyUrl = CONFIG.imageAssessmentUrl.replace('/verify-image', '/verify-message');
-    try {
-      const r = await fetch(messageVerifyUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text,
-          emergency_type: req.body?.emergency_type,
-          lat: req.body?.lat ? Number(req.body.lat) : null,
-          lng: req.body?.lng ? Number(req.body.lng) : null,
-          location_text: req.body?.location_text,
-          people_count: req.body?.people_count ? Number(req.body.people_count) : null
-        }),
-        signal: AbortSignal.timeout(15_000)
-      });
-      const body = await r.json().catch(() => ({}));
-      if (!r.ok) {
-        return res.status(r.status === 422 ? 422 : 502).json({ error: body.detail || 'Message analysis failed.' });
+
+    const isLocal = messageVerifyUrl.includes('127.0.0.1') || messageVerifyUrl.includes('localhost');
+    const maxRetries = isLocal ? 0 : 2;
+    let response = null;
+    let body = null;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const r = await fetch(messageVerifyUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text,
+            emergency_type: req.body?.emergency_type,
+            lat: req.body?.lat ? Number(req.body.lat) : null,
+            lng: req.body?.lng ? Number(req.body.lng) : null,
+            location_text: req.body?.location_text,
+            people_count: req.body?.people_count ? Number(req.body.people_count) : null
+          }),
+          signal: AbortSignal.timeout(attempt === 0 ? 15_000 : 30_000)
+        });
+        const parsed = await r.json().catch(() => null);
+
+        if (r.ok) {
+          return res.json(parsed);
+        }
+
+        if (r.status === 400 || r.status === 422) {
+          let detail = parsed?.detail || parsed?.error;
+          if (Array.isArray(detail)) {
+            detail = detail.map((d) => `${d.loc?.slice(-1)[0] || 'input'}: ${d.msg}`).join(', ');
+          } else if (typeof detail === 'object' && detail !== null) {
+            detail = JSON.stringify(detail);
+          }
+          return res.status(422).json({ error: detail || 'Invalid message verification request.' });
+        }
+
+        response = r;
+        body = parsed;
+
+        if (attempt < maxRetries && (r.status === 502 || r.status === 503 || r.status === 504)) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        } else {
+          break;
+        }
+      } catch (err) {
+        if (attempt < maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
       }
-      return res.json(body);
-    } catch {
-      return res.status(503).json({ error: 'Cannot reach the message analysis service (Stream 2, port 8002). Is it running?' });
     }
+
+    if (response) {
+      let detailMsg = body?.detail || body?.error;
+      if (Array.isArray(detailMsg)) {
+        detailMsg = detailMsg.map((d) => `${d.loc?.slice(-1)[0] || 'input'}: ${d.msg}`).join(', ');
+      } else if (typeof detailMsg === 'object' && detailMsg !== null) {
+        detailMsg = JSON.stringify(detailMsg);
+      }
+
+      if (response.status === 502 || response.status === 504 || response.status === 503) {
+        return res.status(502).json({
+          error: detailMsg || 'The AI verification service (Stream 2) is waking up from standby on Render. Please wait 10 seconds and try again.'
+        });
+      }
+      return res.status(response.status).json({
+        error: detailMsg || 'Message analysis service (Stream 2) returned an error.'
+      });
+    }
+
+    return res.status(503).json({ error: 'Cannot reach the message analysis service (Stream 2, port 8002). Is it running?' });
   });
 
   // 2. Authentication (Citizen & Government separated)

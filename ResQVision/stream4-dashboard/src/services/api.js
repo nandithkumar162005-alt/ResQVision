@@ -11,8 +11,20 @@ import {
 
 export const USE_MOCK_DATA = import.meta.env?.VITE_USE_MOCK_DATA === 'true';
 
-const LAYER3_BASE = (import.meta.env?.VITE_LAYER3_API_URL || '').replace(/\/+$/, '');
-const STREAM3_BASE = (import.meta.env?.VITE_STREAM3_BASE_URL || '').replace(/\/+$/, '');
+// In browser production (e.g. deployed on Vercel), fall back automatically to the live Render microservices
+const isBrowserProd = typeof window !== 'undefined' &&
+  window.location.hostname !== 'localhost' &&
+  window.location.hostname !== '127.0.0.1';
+
+const LAYER3_BASE = (
+  import.meta.env?.VITE_LAYER3_API_URL ||
+  (isBrowserProd ? 'https://resqvision-ifat.onrender.com' : '')
+).replace(/\/+$/, '');
+
+const STREAM3_BASE = (
+  import.meta.env?.VITE_STREAM3_BASE_URL ||
+  (isBrowserProd ? 'https://resqvision-1.onrender.com' : '')
+).replace(/\/+$/, '');
 
 export function resolveUrl(path) {
   if (typeof path !== 'string' || path.startsWith('http://') || path.startsWith('https://')) {
@@ -507,10 +519,16 @@ export async function apiVerifyImage(file, claim = {}) {
   try {
     res = await fetch(resolveUrl('/api/v1/verify-image'), { method: 'POST', body: form });
   } catch {
-    throw new Error('Could not reach the ResQVision backend (port 8004). Is it running?');
+    throw new Error('Could not reach the ResQVision backend. Please check your network connection.');
   }
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(body.error || `Verification failed (${res.status}).`);
+  if (!res.ok) {
+    let errMsg = body.error || body.detail;
+    if (typeof errMsg === 'object' && errMsg !== null) {
+      errMsg = Array.isArray(errMsg) ? errMsg.map((e) => e.msg || JSON.stringify(e)).join(', ') : JSON.stringify(errMsg);
+    }
+    throw new Error(errMsg || `Verification failed (${res.status}).`);
+  }
   return body.data;
 }
 

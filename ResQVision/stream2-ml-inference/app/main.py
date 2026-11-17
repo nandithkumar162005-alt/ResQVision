@@ -432,8 +432,8 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 @app.post("/verify-image", tags=["image-authenticity"])
 async def verify_image(
     file: UploadFile = File(...),
-    lat: Optional[float] = Form(None),
-    lng: Optional[float] = Form(None),
+    lat: Optional[str] = Form(None),
+    lng: Optional[str] = Form(None),
     taken_at: Optional[str] = Form(None),
     claimed_type: Optional[str] = Form(None),
 ) -> dict[str, Any]:
@@ -445,16 +445,44 @@ async def verify_image(
     from app.authenticity import analyze_image  # local import keeps startup light
     from app.authenticity import context as _ctx
 
+    parsed_lat: Optional[float] = None
+    parsed_lng: Optional[float] = None
+    if lat is not None and str(lat).strip():
+        try:
+            parsed_lat = float(str(lat).strip())
+        except ValueError:
+            parsed_lat = None
+    if lng is not None and str(lng).strip():
+        try:
+            parsed_lng = float(str(lng).strip())
+        except ValueError:
+            parsed_lng = None
+
     raw = await file.read()
     try:
         auth = analyze_image(raw).to_dict()
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    img = _Image.open(_io.BytesIO(raw))
-    ctx = await asyncio.to_thread(_ctx.build_context, img,
-                                  {"lat": lat, "lng": lng, "taken_at": taken_at, "claimed_type": claimed_type})
-    auth["context"] = ctx
-    auth["summary"] = _ctx.combine(auth, ctx)
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=f"Image could not be processed: {exc}") from exc
+
+    try:
+        img = _Image.open(_io.BytesIO(raw))
+        ctx = await asyncio.to_thread(_ctx.build_context, img,
+                                      {"lat": parsed_lat, "lng": parsed_lng, "taken_at": taken_at, "claimed_type": claimed_type})
+        auth["context"] = ctx
+        auth["summary"] = _ctx.combine(auth, ctx)
+    except Exception as exc:
+        # Fallback context if external services or metadata fail, keeping the AI analysis report intact
+        auth["context"] = {
+            "overall": "INSUFFICIENT_DATA",
+            "label": "Context check unavailable",
+            "checks": [{"id": "need", "title": "Weather / earthquake cross-check", "status": "unavailable",
+                        "detail": f"Temporary note during context check: {exc}"}],
+            "used": {"location": [parsed_lat, parsed_lng] if parsed_lat and parsed_lng else None,
+                     "date": taken_at, "claimed_type": claimed_type}
+        }
+        auth["summary"] = _ctx.combine(auth, auth["context"])
     return {"status": "success", "data": auth}
 
 
