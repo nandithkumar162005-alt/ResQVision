@@ -64,6 +64,11 @@ async function fetchJsonStrict(url, options = {}) {
   const isJson = contentType.toLowerCase().includes('application/json');
 
   if (!response.ok) {
+    if (response.status === 404 && targetUrl.includes('/api/v1/') && !LAYER3_BASE) {
+      throw new Error(
+        'Backend service not connected (HTTP 404). Please set VITE_LAYER3_API_URL in your Vercel Environment Variables pointing to your Render backend, or set VITE_USE_MOCK_DATA=true for demo mode.'
+      );
+    }
     if (isJson) {
       const errBody = await response.json().catch(() => null);
       throw new Error(errBody?.error || `Backend endpoint ${url} returned HTTP ${response.status}.`);
@@ -265,6 +270,17 @@ export function getInitialLayer1Data() {
    ========================================================================== */
 
 export async function apiLoginCitizen({ email, password }) {
+  if (USE_MOCK_DATA) {
+    return {
+      token: 'demo-citizen-session-token',
+      user: {
+        id: 'demo-citizen-id',
+        email: email || 'citizen@resqvision.local',
+        name: 'Demo Citizen',
+        role: 'citizen'
+      }
+    };
+  }
   return fetchJsonStrict('/api/v1/auth/citizen/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -273,6 +289,17 @@ export async function apiLoginCitizen({ email, password }) {
 }
 
 export async function apiRegisterCitizen({ name, email, password }) {
+  if (USE_MOCK_DATA) {
+    return {
+      token: 'demo-citizen-session-token',
+      user: {
+        id: 'demo-citizen-id',
+        email: email || 'citizen@resqvision.local',
+        name: name || 'Demo Citizen',
+        role: 'citizen'
+      }
+    };
+  }
   return fetchJsonStrict('/api/v1/auth/citizen/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -281,6 +308,18 @@ export async function apiRegisterCitizen({ name, email, password }) {
 }
 
 export async function apiLoginGovernment({ email, password, agency }) {
+  if (USE_MOCK_DATA) {
+    return {
+      token: 'demo-government-session-token',
+      user: {
+        id: 'demo-officer-id',
+        email: email || 'officer@ndrf.resqvision.local',
+        name: 'NDRF Command Officer',
+        role: 'government',
+        agency: agency || 'NDRF / SDRF'
+      }
+    };
+  }
   return fetchJsonStrict('/api/v1/auth/government/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -289,6 +328,15 @@ export async function apiLoginGovernment({ email, password, agency }) {
 }
 
 export async function apiSubmitSos(payload, token) {
+  if (USE_MOCK_DATA) {
+    const reference = `SOS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    return {
+      reference,
+      status: 'pending_review',
+      statusLabel: 'Pending Review',
+      message: 'SOS submitted successfully (demo mode).'
+    };
+  }
   const form = new FormData();
   form.append('emergencyType', payload.emergencyType);
   form.append('locationText', payload.locationText);
@@ -318,6 +366,9 @@ export async function apiSubmitSos(payload, token) {
 }
 
 export async function apiFetchCitizenSos(token) {
+  if (USE_MOCK_DATA) {
+    return { reports: INITIAL_DEMO_SOS_REPORTS };
+  }
   return fetchJsonStrict('/api/v1/citizen/sos', {
     headers: authHeaders(token)
   });
@@ -381,6 +432,9 @@ export async function apiMarkGovernmentNotificationsRead(token) {
 }
 
 export async function apiFetchGovernmentSos(token) {
+  if (USE_MOCK_DATA) {
+    return { reports: INITIAL_DEMO_SOS_REPORTS };
+  }
   return fetchJsonStrict('/api/v1/government/sos', {
     headers: authHeaders(token)
   });
@@ -395,6 +449,9 @@ export async function apiReviewGovernmentSos(reference, body, token) {
 }
 
 export async function apiFetchGovernmentOperations(token) {
+  if (USE_MOCK_DATA) {
+    return { operations: INITIAL_DEMO_RESCUE_OPERATIONS };
+  }
   return fetchJsonStrict('/api/v1/government/operations', {
     headers: authHeaders(token)
   });
@@ -420,6 +477,9 @@ export async function apiUpdateGovernmentOperation(operationRef, payload, token)
 }
 
 export async function apiFetchGovernmentCasualties(token) {
+  if (USE_MOCK_DATA) {
+    return DEMO_CASUALTY_RECORD;
+  }
   return fetchJsonStrict('/api/v1/government/casualties', {
     headers: authHeaders(token)
   });
